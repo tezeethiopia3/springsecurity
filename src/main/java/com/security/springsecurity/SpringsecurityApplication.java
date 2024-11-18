@@ -9,7 +9,7 @@ public class SpringsecurityApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SpringsecurityApplication.class, args);
 
-		System.out.println("working thanks God==============");
+		System.out.println("working thanks God============== test");
 	}
 
 }
