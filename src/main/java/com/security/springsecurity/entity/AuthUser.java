@@ -59,17 +59,24 @@ public class AuthUser implements UserDetails, Principal {
     public String getName() {
         return email;
     }
+//original code
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return this.roles.stream()
+//                .map(r-> new SimpleGrantedAuthority(r.getName()))
+//                .collect(Collectors.toList());
+//    }
 
-    @Override
+        @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(r-> new SimpleGrantedAuthority(r.getName()))
-                .collect(Collectors.toList());
+        return getPermissionAuthorities();
     }
-    public List<GrantedAuthority> getPermissionAuthorities(){
-        return this.permissionList.stream().map(p->new
-                SimpleGrantedAuthority(p.getName()))
+    public List<SimpleGrantedAuthority> getPermissionAuthorities(){
+        var auth=this.permissionList.stream().map(p->new
+                        SimpleGrantedAuthority(p.getName()))
                 .collect(Collectors.toList());
+        auth.add(new SimpleGrantedAuthority("ROLE_"+ this.getName()));
+        return auth;
     }
 
     @Override
