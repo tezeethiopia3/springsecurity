@@ -1,19 +1,23 @@
 package com.security.springsecurity.service;
 
 
+import com.security.springsecurity.daoauth.PermissionRepository;
 import com.security.springsecurity.daoauth.RoleRepository;
 import com.security.springsecurity.daoauth.TokenRepository;
 import com.security.springsecurity.daoauth.UserRepository;
 import com.security.springsecurity.dto.AuthenticationRequest;
 import com.security.springsecurity.dto.AuthenticationResponse;
 import com.security.springsecurity.dto.RegistrationRequest;
+import com.security.springsecurity.dto.Role;
 import com.security.springsecurity.entity.AuthRole;
 import com.security.springsecurity.entity.AuthToken;
 import com.security.springsecurity.entity.AuthUser;
+import com.security.springsecurity.entity.Permission;
 import com.security.springsecurity.security.JwtService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,6 +45,7 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
 
     private final TokenRepository tokenRepository;
+    private final PermissionRepository permissionRepository;
 
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
@@ -59,6 +64,7 @@ public class AuthenticationService {
                 .accountLocked(false)
                 .enabled(true) //enabled using account activation end point // for HPMIS purpose it is true
                 .roles(List.of(userRole))
+                .createdDate(LocalDateTime.now()) //added on nob=vember 18
                 .build();
         userRepository.save(user);
 //        sendValidationEmail(user); letter this one should be enabled
@@ -168,4 +174,21 @@ public class AuthenticationService {
 //        return null;
 //        return Optional.ofNullable(userRepository.findById(id)).orElse(Optional.empty());
 //    }
+
+
+
+    public ResponseEntity<?> createRole(Role role)
+    {
+        AuthRole authRole=new AuthRole();
+        authRole.setCreatedDate(LocalDateTime.now());
+        authRole.setName(role.getName());
+        roleRepository.save(authRole);
+        return ResponseEntity.accepted().build();
+    }
+
+    public ResponseEntity<?> createPermssion(Permission permission){
+        permissionRepository.save(permission) ;
+
+        return ResponseEntity.accepted().build();
+    }
 }

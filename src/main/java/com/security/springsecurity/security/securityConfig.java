@@ -33,7 +33,7 @@ public class securityConfig {
     @Bean
    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
     {
-        System.out.println("securityConfig===");
+        System.out.println("securityConfig class  EnableWebSecurity nov 22 ===");
         http
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -51,8 +51,8 @@ public class securityConfig {
                                         "/webjars/**",
                                         "/swagger-ui.html"
                                 )
-//                                .permitAll()
-                                .access(hasIpAddress(allowedIp))
+                                .permitAll()
+                               // .access(hasIpAddress(allowedIp))
                                 .anyRequest()
                                 .authenticated()
 
@@ -64,8 +64,11 @@ public class securityConfig {
     }
 
     private static AuthorizationManager<RequestAuthorizationContext> hasIpAddress(String ipAddress) {
+       System.out.println("hasIpAddress======method ========");
         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(ipAddress);
         return (authentication, context) -> {
+
+
             HttpServletRequest request = context.getRequest();
             return new AuthorizationDecision(ipAddressMatcher.matches(request));
         };

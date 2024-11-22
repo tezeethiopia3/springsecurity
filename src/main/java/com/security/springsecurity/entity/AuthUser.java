@@ -45,6 +45,7 @@ public class AuthUser implements UserDetails, Principal {
     private LocalDateTime lastModifiedDate;
     @ManyToMany(fetch = FetchType.EAGER)
     private List<AuthRole> roles;
+    private List<Permission> permissionList;
 //    @OneToMany(
 //            mappedBy = "owner"
 //    )
@@ -63,6 +64,11 @@ public class AuthUser implements UserDetails, Principal {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
                 .map(r-> new SimpleGrantedAuthority(r.getName()))
+                .collect(Collectors.toList());
+    }
+    public List<GrantedAuthority> getPermissionAuthorities(){
+        return this.permissionList.stream().map(p->new
+                SimpleGrantedAuthority(p.getName()))
                 .collect(Collectors.toList());
     }
 

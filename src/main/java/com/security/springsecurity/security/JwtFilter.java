@@ -31,6 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         if (request.getServletPath().contains("/auth/authenticate")) {
+            System.out.println("JwtFilter class==doFilterInternal=== nov 22========");
             filterChain.doFilter(request, response);
             return;
         }
@@ -38,17 +39,18 @@ public class JwtFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("Either authHeader is null or authHeader is not started with Bearer ");
             filterChain.doFilter(request, response);
             return;
         }
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUsername(jwt);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            System.out.println("userEmail is not null===============");
-            System.out.println("user is not authenticated===============");
+            System.out.println("JwtFilter class== userEmail is not null===============");
+            System.out.println("JwtFilter class== user is not authenticated=============== nov 22");
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
-                System.out.println("token is valid=======================");
+                System.out.println("JwtFilter class== token is valid=======================");
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
