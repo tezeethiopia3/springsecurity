@@ -1,18 +1,15 @@
 package com.security.springsecurity.service;
 
 
-import com.security.springsecurity.daoauth.PermissionRepository;
+import com.security.springsecurity.daoauth.AuthAccessListRepository;
 import com.security.springsecurity.daoauth.RoleRepository;
 import com.security.springsecurity.daoauth.TokenRepository;
 import com.security.springsecurity.daoauth.UserRepository;
-import com.security.springsecurity.dto.AuthenticationRequest;
-import com.security.springsecurity.dto.AuthenticationResponse;
-import com.security.springsecurity.dto.RegistrationRequest;
-import com.security.springsecurity.dto.Role;
+import com.security.springsecurity.dto.*;
+import com.security.springsecurity.entity.AuthAccessList;
 import com.security.springsecurity.entity.AuthRole;
 import com.security.springsecurity.entity.AuthToken;
 import com.security.springsecurity.entity.AuthUser;
-import com.security.springsecurity.entity.Permission;
 import com.security.springsecurity.security.JwtService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +42,7 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
 
     private final TokenRepository tokenRepository;
-    private final PermissionRepository permissionRepository;
-
+    private final AuthAccessListRepository authAccessListRepository;
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
@@ -186,8 +182,8 @@ public class AuthenticationService {
         return ResponseEntity.accepted().build();
     }
 
-    public ResponseEntity<?> createPermssion(Permission permission){
-        permissionRepository.save(permission) ;
+    public ResponseEntity<?> createPermssion(AuthAccessList permission){
+        authAccessListRepository.save(permission) ;
 
         return ResponseEntity.accepted().build();
     }

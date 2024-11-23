@@ -1,6 +1,5 @@
 package com.security.springsecurity.dto;
 
-import com.security.springsecurity.entity.Permission;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +14,6 @@ import java.util.List;
 @Builder
 public class Role {
     String name;
-    @OneToMany
-    private List<Permission> permissionList;
+//    @OneToMany
+//    private List<Permission> permissionList;
 }

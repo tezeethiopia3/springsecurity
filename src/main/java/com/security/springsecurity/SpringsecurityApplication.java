@@ -1,6 +1,8 @@
 package com.security.springsecurity;
 
+import com.security.springsecurity.daoauth.AuthAccessListRepository;
 import com.security.springsecurity.daoauth.RoleRepository;
+import com.security.springsecurity.entity.AuthAccessList;
 import com.security.springsecurity.entity.AuthRole;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -31,7 +33,19 @@ public class SpringsecurityApplication {
 
 
 						build());
-			}
+			};
+//			if(authAccessList.findByName("USER_READ").isEmpty()){
+//				LocalDateTime localDateTime1 = LocalDateTime.now().plusYears(1)
+//						.plusMonths(1)
+//						.plusWeeks(1)
+//						.plusDays(1);
+//				AuthRole authRole=new AuthRole();
+//				authRole.setId(1);
+//				authAccessList.save(AuthAccessList.builder().Name("USER").authRole(authRole).
+//
+//
+//						build());
+//			}
 
 		};
 

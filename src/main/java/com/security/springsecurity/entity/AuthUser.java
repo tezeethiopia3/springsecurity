@@ -45,7 +45,8 @@ public class AuthUser implements UserDetails, Principal {
     private LocalDateTime lastModifiedDate;
     @ManyToMany(fetch = FetchType.EAGER)
     private List<AuthRole> roles;
-    private List<Permission> permissionList;
+    private List<AuthAccessList> permissionList;
+
 //    @OneToMany(
 //            mappedBy = "owner"
 //    )
@@ -60,24 +61,24 @@ public class AuthUser implements UserDetails, Principal {
         return email;
     }
 //original code
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return this.roles.stream()
-//                .map(r-> new SimpleGrantedAuthority(r.getName()))
-//                .collect(Collectors.toList());
-//    }
-
-        @Override
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getPermissionAuthorities();
-    }
-    public List<SimpleGrantedAuthority> getPermissionAuthorities(){
-        var auth=this.permissionList.stream().map(p->new
-                        SimpleGrantedAuthority(p.getName()))
+        return this.roles.stream()
+                .map(r-> new SimpleGrantedAuthority(r.getName()))
                 .collect(Collectors.toList());
-        auth.add(new SimpleGrantedAuthority("ROLE_"+ this.getName()));
-        return auth;
     }
+
+//        @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return getPermissionAuthorities();
+//    }
+//    public List<SimpleGrantedAuthority> getPermissionAuthorities(){
+//        var auth=this.permissionList.stream().map(p->new
+//                        SimpleGrantedAuthority(p.getName()))
+//                .collect(Collectors.toList());
+//        auth.add(new SimpleGrantedAuthority("ROLE_"+ this.getName()));
+//        return auth;
+//    }
 
     @Override
     public String getPassword() {

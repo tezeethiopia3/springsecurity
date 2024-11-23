@@ -1,25 +1,23 @@
 package com.security.springsecurity.entity;
 
-import com.security.springsecurity.dto.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Data
-public class Permission {
+public class AuthAccessList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
     @ManyToOne
-    private AuthRole role;
+    @JoinColumn(name = "role_id")
+   private AuthRole authRole;
 
 }

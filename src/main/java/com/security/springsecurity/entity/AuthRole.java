@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -35,6 +36,11 @@ public class AuthRole {
     @ManyToMany(mappedBy ="roles" )
     @JsonIgnore //used to avoid loop when it eagerly fetch data
     private List<AuthUser> users;
+
+    @OneToMany(mappedBy = "authRole")
+    private Set<AuthAccessList> AuthAccessList;
+
+
 
 
 }
