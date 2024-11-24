@@ -1,5 +1,6 @@
 package com.security.springsecurity.dto;
 
+import com.security.springsecurity.entity.AuthRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -8,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,4 +31,5 @@ public class RegistrationRequest {
     @NotBlank(message = "password can not be blank")
     @Size(min = 8,message = "Minimum length should be 8")
     private String password;
+    private String roleName;
 }

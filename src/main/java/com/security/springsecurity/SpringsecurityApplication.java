@@ -24,12 +24,12 @@ public class SpringsecurityApplication {
 	public CommandLineRunner commandLineRunner(RoleRepository roleRepository)
 	{
 		return  args -> {
-			if(roleRepository.findByName("USER").isEmpty()){
+			if(roleRepository.findByName("ADMIN").isEmpty()){
 				LocalDateTime localDateTime1 = LocalDateTime.now().plusYears(1)
 						.plusMonths(1)
 						.plusWeeks(1)
 						.plusDays(1);
-				roleRepository.save(AuthRole.builder().name("USER").createdDate(LocalDateTime.now()).
+				roleRepository.save(AuthRole.builder().name("ADMIN").createdDate(LocalDateTime.now()).
 
 
 						build());

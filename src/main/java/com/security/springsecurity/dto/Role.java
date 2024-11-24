@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @Builder
 public class Role {
-    String name;
+    String roleName;
 //    @OneToMany
 //    private List<Permission> permissionList;
 }

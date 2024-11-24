@@ -18,14 +18,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,9 +49,12 @@ public class AuthenticationService {
 
     public void register(RegistrationRequest request) throws MessagingException {
         System.out.println("AuthenticationService==  register register");
-        AuthRole userRole = roleRepository.findByName("USER")
+//        AuthRole userRole = roleRepository.findByName("USER")
+        System.out.println("request.getRoleName()==="+request.getRoleName());
+        AuthRole userRole = roleRepository.findByName(request.getRoleName())
+
                 // todo - better exception handling
-                .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
+                .orElseThrow(() -> new IllegalStateException("ROLE was not found"));
         var user = AuthUser.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -88,10 +91,14 @@ public class AuthenticationService {
         System.out.println("AuthenticationService==  after auth");
 
         Map<String, Object> claims = new HashMap<>(); //I have the type of claims from Var to Map<String, Object>
-        var user = ((AuthUser) auth.getPrincipal());
-        claims.put("fullName", user.fullNmae());
+//        var user = (auth.getPrincipal());
+//        claims.put("fullName", user.);
 
-        var jwtToken = jwtService.generateToken(claims, (AuthUser) auth.getPrincipal());
+
+
+//        var jwtToken = jwtService.generateToken(claims, (AuthUser) auth.getPrincipal());
+        var jwtToken = jwtService.generateToken(claims, (UserDetails) auth.getPrincipal());
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -177,7 +184,7 @@ public class AuthenticationService {
     {
         AuthRole authRole=new AuthRole();
         authRole.setCreatedDate(LocalDateTime.now());
-        authRole.setName(role.getName());
+        authRole.setName(role.getRoleName());
         roleRepository.save(authRole);
         return ResponseEntity.accepted().build();
     }
@@ -187,4 +194,6 @@ public class AuthenticationService {
 
         return ResponseEntity.accepted().build();
     }
+
+
 }

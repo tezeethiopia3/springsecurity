@@ -52,7 +52,9 @@ public class securityConfig {
                                         "/swagger-ui.html"
                                 )
                                 .permitAll()
-                               // .access(hasIpAddress(allowedIp))
+                                .requestMatchers("/manager/**").hasAnyRole("MANAGER")
+                                .requestMatchers("/admin/**").hasAnyAuthority("ADMIN","TEST")
+                                // .access(hasIpAddress(allowedIp))
                                 .anyRequest()
                                 .authenticated()
 

@@ -1,10 +1,8 @@
 package com.security.springsecurity.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -43,9 +41,8 @@ public class AuthUser implements UserDetails, Principal {
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private List<AuthRole> roles;
-    private List<AuthAccessList> permissionList;
 
 //    @OneToMany(
 //            mappedBy = "owner"
@@ -61,24 +58,21 @@ public class AuthUser implements UserDetails, Principal {
         return email;
     }
 //original code
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return this.roles.stream()
+//                .map(r-> new SimpleGrantedAuthority(r.getName()))
+//                .collect(Collectors.toList());
+//    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(r-> new SimpleGrantedAuthority(r.getName()))
-                .collect(Collectors.toList());
+        return roles.get(0).getAuthorities();
     }
 
-//        @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return getPermissionAuthorities();
-//    }
-//    public List<SimpleGrantedAuthority> getPermissionAuthorities(){
-//        var auth=this.permissionList.stream().map(p->new
-//                        SimpleGrantedAuthority(p.getName()))
-//                .collect(Collectors.toList());
-//        auth.add(new SimpleGrantedAuthority("ROLE_"+ this.getName()));
-//        return auth;
-//    }
+
+
+
 
     @Override
     public String getPassword() {

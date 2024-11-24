@@ -20,6 +20,7 @@ public class Admin {
     @PostMapping("/createrole")
     public ResponseEntity<?> CreateRole(@RequestBody Role role)
     {
+        System.out.println("CreateRole method==============");
         authenticationService.createRole(role);
         return ResponseEntity.accepted().build();
 
