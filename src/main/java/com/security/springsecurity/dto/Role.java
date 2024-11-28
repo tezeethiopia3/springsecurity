@@ -14,6 +14,5 @@ import java.util.List;
 @Builder
 public class Role {
     String roleName;
-//    @OneToMany
-//    private List<Permission> permissionList;
+    List<ResourceName> resourceNamelist;
 }

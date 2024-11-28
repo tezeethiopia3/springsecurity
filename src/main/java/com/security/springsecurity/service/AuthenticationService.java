@@ -12,8 +12,11 @@ import com.security.springsecurity.entity.AuthToken;
 import com.security.springsecurity.entity.AuthUser;
 import com.security.springsecurity.security.JwtService;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -180,20 +183,123 @@ public class AuthenticationService {
 
 
 
-    public ResponseEntity<?> createRole(Role role)
+//    public AuthRole createRole(Role role)
+    public AuthRole createRole(AuthRole role)
     {
-        AuthRole authRole=new AuthRole();
-        authRole.setCreatedDate(LocalDateTime.now());
-        authRole.setName(role.getRoleName());
-        roleRepository.save(authRole);
-        return ResponseEntity.accepted().build();
+//        List<AuthAccessList> authAccessLists=new ArrayList<>();
+//        for(ResourceName resourceName:role.getResourceNamelist()){
+//            Optional<AuthAccessList> authAccessListFromDB= Optional.ofNullable(authAccessListRepository.findByName(resourceName.getName())
+//                    .orElseThrow(() -> new EntityNotFoundException("The access is not found in the database")));
+//            AuthAccessList authAccessList=authAccessListFromDB.get();
+//            authAccessLists.add(authAccessList);
+//        }
+//        AuthRole authRole=new AuthRole();
+//        role.setCreatedDate(LocalDateTime.now());
+//        authRole.setName(role.getRoleName());
+//        authRole.setAuthAccessList(authAccessLists);
+System.out.println("createRole service==========");
+        return roleRepository.save(role);
+    }
+    public Optional<AuthRole> updateRole(AuthRole rolNew)
+    {
+        Optional<AuthRole> optionalAuthRole= roleRepository.findByName(rolNew.getName());
+
+//        return authRole.map(roleRepository::save);
+        if(optionalAuthRole.isPresent()){
+            AuthRole role=optionalAuthRole.get();
+            Set<AuthAccessList> accessListsFromDB=new HashSet<>();
+            accessListsFromDB=role.getAccessLists();
+
+            Set<AuthAccessList> accessListsFromFront=new HashSet<>();
+            accessListsFromFront=rolNew.getAccessLists();
+
+
+
+            Set<AuthAccessList> accessListsFromNew=new HashSet<>();
+        List<AuthAccessList> accessListsfromdb=new ArrayList<>();
+            List<AuthAccessList> accessListsfromfront=new ArrayList<>();
+            accessListsfromdb.addAll(accessListsFromDB);
+            accessListsfromfront.addAll(accessListsFromFront);
+            boolean exist=false;
+
+            for(int i=0;i<accessListsfromfront.size();i++){
+
+                for(int j=0;j<accessListsfromdb.size();j++){
+                    if(accessListsfromfront.get(i).getName().equals(accessListsfromdb.get(j).getName())){
+                        exist=true;
+                    }
+                    if(!exist){
+                        accessListsFromNew.add(accessListsfromfront.get(i));
+                    }
+
+                }
+            }
+
+
+
+//            for(int i =0;i<accessListsFromDB.size();i++){
+//                boolean exist=false;
+//                for(int j=0;j<accessListsFromFront.size();j++){
+//                    if(accessListsFromDB.contains(accessListsFromFront)){
+//                        exist=true;
+//
+//                    }
+//                    if(!exist){
+//
+//                    }
+//                }
+//            }
+//            Iterator accessListIteratorFromfront=accessListsFromFront.iterator();
+//
+//            while(accessListIteratorFromfront.hasNext()){
+//                if(accessListIteratorFromfront.next().equals(accessListIteratorFromDB.next())){
+//
+//                }
+//            }
+
+//            role.setName(rolNew.getName());
+//            role.getAuthorities().forEach(access->access.);
+            //the purpose of the following three code of line is to avoid duplicate
+
+//            accessLists.addAll(rolNew.getAccessLists());
+
+            role.setAccessLists(accessListsFromNew);
+
+//           for(AuthAccessList authAccessList:rolNew.getAccessLists()){
+//              if(!role.getAccessLists().contains(authAccessList)) {
+//                  role.getAccessLists().add(authAccessList);
+//              }
+
+//           }
+          return Optional.of(roleRepository.save(role));
+        }
+        else{
+            return Optional.empty();
+        }
     }
 
-    public ResponseEntity<?> createPermssion(AuthAccessList permission){
-        authAccessListRepository.save(permission) ;
 
-        return ResponseEntity.accepted().build();
+//    public AuthAccessList createPermssion(PermissionDto permissionDto){
+        public AuthAccessList createPermssion(AuthAccessList permissionDto){
+//        List<AuthRole> authRoleList=new ArrayList<>();
+//        if(!permissionDto.getRoleNames().isEmpty()){
+//            for(RoleName roleName:permissionDto.getRoleNames()){
+//                Optional<AuthRole> authRoleFromDb= Optional.ofNullable(roleRepository.findByName(roleName.getName())
+//                        .orElseThrow(() -> new EntityNotFoundException("The role Is not found in the database")));
+//                AuthRole authRole=authRoleFromDb.get();
+//                authRoleList.add(authRole);
+//
+//            }
+//        }
+//
+//        AuthAccessList permission=new AuthAccessList();
+//        permission.setName(permissionDto.getName());
+//        permission.setAuthRoleList(authRoleList);
+
+        return authAccessListRepository.save(permissionDto) ;
     }
+
+
 
 
 }

@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-@Data
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 @Builder
 @AllArgsConstructor
@@ -41,7 +42,7 @@ public class AuthUser implements UserDetails, Principal {
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
-    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<AuthRole> roles;
 
 //    @OneToMany(

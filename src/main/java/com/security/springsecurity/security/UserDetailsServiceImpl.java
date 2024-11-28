@@ -50,7 +50,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             System.out.println("x.getAuthority()==========="+x.getAuthority());
         }
        // System.out.println(arrayList.get(0).getAuthority());
-        List<AuthAccessList> authAccessLists=userOptional.get().getRoles().get(0).getAuthAccessList();
+//        List<AuthAccessList> authAccessLists=userOptional.get().getRoles().get(0).getAccessLists();
         User myUser;
 
         myUser = new User(user.getEmail(),user.getPassword(),user.getAuthorities());

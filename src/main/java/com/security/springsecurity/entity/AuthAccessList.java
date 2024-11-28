@@ -1,23 +1,24 @@
 package com.security.springsecurity.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class AuthAccessList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
     private String name;
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-   private AuthRole authRole;
+    @ManyToMany(mappedBy = "accessLists",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   private Set<AuthRole> authRoleList;
 
 }
