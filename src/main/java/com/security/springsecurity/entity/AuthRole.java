@@ -43,13 +43,14 @@ public class AuthRole {
 //    @JsonIgnore //used to avoid loop when it eagerly fetch data
     //auth role is called target class
 //    @ManyToMany(mappedBy = "authRoleList",fetch = FetchType.LAZY)
+
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "Role_with_Access_list",
             joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "access_id",referencedColumnName = "id")
     )
-      private Set<AuthAccessList> accessLists;
+      private List<AuthAccessList> accessLists;
 
 
 
@@ -66,20 +67,22 @@ public class AuthRole {
 
     public List<SimpleGrantedAuthority> getAuthorities(){
 
-        System.out.println("Tezera is comming for you=====================");
-
-        System.out.println("Tezera is comming for you 2 this.authAccessList.size()====================="+
-                this.accessLists.size());
-
-        System.out.println("Tezera is comming for you 2 this.authAccessList.size()====================="+
-                this.accessLists);
-
+//        System.out.println("Tezera is comming for you=====================");
+//
+//        System.out.println("Tezera is comming for you 2 this.authAccessList.size()====================="+
+//                this.accessLists.size());
+//
+//        System.out.println("Tezera is comming for you 2 this.authAccessList.size()====================="+
+//                this.accessLists);
 
         var auth=this.accessLists.stream().map(p->new
                         SimpleGrantedAuthority(p.getName()))
                 .collect(Collectors.toList());
         auth.add(new SimpleGrantedAuthority(this.getName()));
         return auth;
+
+
+
     }
 
 

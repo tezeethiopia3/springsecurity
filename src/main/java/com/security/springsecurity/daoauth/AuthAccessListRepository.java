@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface AuthAccessListRepository extends JpaRepository<AuthAccessList,Integer> {
-    Optional<AuthAccessList> findByName(String role);
+     Optional<AuthAccessList> findByName(String s);
 }

@@ -1,5 +1,6 @@
 package com.security.springsecurity.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,8 @@ public class AuthAccessList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
-    @ManyToMany(mappedBy = "accessLists",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-   private Set<AuthRole> authRoleList;
+    @JsonIgnore
+    @ManyToMany(mappedBy = "accessLists",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+   private List<AuthRole> authRoleList;
 
 }

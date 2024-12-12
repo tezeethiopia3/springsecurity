@@ -2,23 +2,22 @@ package com.security.springsecurity.controller;
 
 import com.security.springsecurity.daoauth.AuthAccessListRepository;
 import com.security.springsecurity.daoauth.RoleRepository;
-import com.security.springsecurity.dto.PermissionDto;
-import com.security.springsecurity.dto.ResourceName;
-import com.security.springsecurity.dto.Role;
-import com.security.springsecurity.dto.RoleName;
+import com.security.springsecurity.dto.EmailProperties;
+import com.security.springsecurity.dto.PasswordRequestUtil;
+import com.security.springsecurity.dto.UserDto;
 import com.security.springsecurity.entity.AuthAccessList;
 import com.security.springsecurity.entity.AuthRole;
+import com.security.springsecurity.entity.AuthUser;
 import com.security.springsecurity.service.AuthenticationService;
-import jakarta.persistence.EntityNotFoundException;
+import com.security.springsecurity.service.EmailService;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RequestMapping("admin")
@@ -29,26 +28,55 @@ public class Admin {
     private final RoleRepository roleRepository;
     private final AuthAccessListRepository authAccessListRepository;
 
-    @PostMapping("/createRole")
-//    public AuthRole CreateRole(@RequestBody Role role)
-    public AuthRole CreateRole(@RequestBody AuthRole role)
-    {
-        System.out.println("CreateRole method==============");
-//        System.out.println("CreateRole method==============+role.getName()"+role.getName());
-//        System.out.println("CreateRole method==============+role.getAuthAccessList().get(0).getName()"+role.getAccessLists().get(0).getName());
-        role.setCreatedDate(LocalDateTime.now());
-        return  authenticationService.createRole(role);
+    private final  EmailService emailService;
+
+    @PostMapping("/sendMail")
+    public void sendMail(@RequestBody EmailProperties emailProperties) throws MessagingException {
+        emailService.sendMail(emailProperties);
 
     }
+
     @PostMapping("/updateRole")
     public Optional<AuthRole> updateRole(@RequestBody AuthRole authRole)
     {
-        System.out.println("CreateRole method==============");
+        System.out.println("updateRole method==============");
         return authenticationService.updateRole(authRole);
     }
-    @PostMapping("/createPermission")
-    public AuthAccessList createPermission(@RequestBody AuthAccessList permissionDto)
+//    @PostMapping("/createPermission")
+//    public AuthAccessList createPermission(@RequestBody AuthAccessList permissionDto)
+//    {
+//        return authenticationService.createPermssion(permissionDto);
+//    }
+    @PostMapping("/saveResource")
+    public AuthAccessList saveResource(@RequestBody AuthAccessList authAccessList)
     {
-        return authenticationService.createPermssion(permissionDto);
+
+       return authenticationService.saveResource(authAccessList);
+
     }
+    @PostMapping("/saveRole")
+    public AuthRole saveRole(@RequestBody AuthRole authRole)
+    {
+        System.out.println("saveRole=================");
+        return authenticationService.saveRole(authRole) ;
+    }
+    @PostMapping("/grantRoleToUser")
+    public Optional<AuthUser> grantRoleToUser(@ RequestBody AuthUser user){
+        System.out.println("grantRoleToUser=============");
+        return  authenticationService.grantRoleToUser(user);
+    }
+    @PostMapping("/passwordChange")
+    public boolean passwordChange(@RequestBody PasswordRequestUtil passwordRequestUtil)
+    {
+        System.out.println("passwordChange method=========");
+      return  authenticationService.passwordChange(passwordRequestUtil);
+
+    }
+@RequestMapping("/getAllUser")
+    public List<UserDto> getAllUser(){
+        return authenticationService.getAllUser();
+    }
+
+
+
 }

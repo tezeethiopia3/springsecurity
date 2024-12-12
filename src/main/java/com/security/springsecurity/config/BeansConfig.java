@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -40,6 +42,7 @@ public class BeansConfig {
 //        System.out.println("BeansConfig===authenticationManager====");
 //        return config.getAuthenticationManager();
 //    }
+
 
     @Bean
     public AuthenticationManager authenticationManager(List<AuthenticationProvider> myAuthenticationProviders) {

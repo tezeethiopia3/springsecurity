@@ -23,12 +23,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.security.SecureRandom;
+import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +53,8 @@ public class AuthenticationService {
     private final AuthAccessListRepository authAccessListRepository;
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
+
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
     public void register(RegistrationRequest request) throws MessagingException {
@@ -168,11 +175,34 @@ public class AuthenticationService {
         return codeBuilder.toString();
     }
 
-   public List<AuthUser> findAllUserForTest()
+   public Optional<AuthUser> grantRoleToUser(AuthUser userNew)
     {
-        return null;
+        System.out.println("userNew.getEmail()=="+userNew.getEmail());
+        Optional<AuthUser> user1=userRepository.findByEmail(userNew.getEmail());
+        List<AuthRole> authRoleList=null;
+        AuthUser user2=new AuthUser();
+        if(user1.isPresent()){
+            System.out.println("user1.isPresent()=="+user1.isPresent());
+            user2=user1.get();
+            authRoleList=new ArrayList<>();
+            for(AuthRole role:userNew.getRoles()){
 
-//        return userRepository.findAll();
+                Optional<AuthRole> optionalAuthRole=roleRepository.findByName(role.getName());
+                if(optionalAuthRole.isPresent()){
+                    System.out.println("optionalAuthRole.isPresent()=="+optionalAuthRole.isPresent());
+                    authRoleList.add(optionalAuthRole.get())  ;
+                }else{
+                    AuthRole authRole=new AuthRole();
+//
+                    authRole.setName(role.getName());
+                    authRole.setCreatedDate(LocalDateTime.now());
+                    authRoleList.add(authRole);
+                }
+
+            }
+        }
+        user2.setRoles(authRoleList);
+        return Optional.of(userRepository.save(user2));
     }
 
 //    public Optional<UserList> findByIdFInction(Integer id) {
@@ -181,125 +211,101 @@ public class AuthenticationService {
 //        return Optional.ofNullable(userRepository.findById(id)).orElse(Optional.empty());
 //    }
 
+public AuthRole saveRole(AuthRole authRole)
+{
+    authRole.setCreatedDate(LocalDateTime.now());
+    Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(authRole.getAccessLists().iterator().next().getName());
+   if(authAccessList.isPresent()){
+       System.out.println("authAccessList.get().getId()===="+authAccessList.get().getId());
+       authRole.setAccessLists(authAccessList.stream().collect(Collectors.toList()));
+   }
+    return roleRepository.save(authRole) ;
+}
 
 
-//    public AuthRole createRole(Role role)
-    public AuthRole createRole(AuthRole role)
-    {
-//        List<AuthAccessList> authAccessLists=new ArrayList<>();
-//        for(ResourceName resourceName:role.getResourceNamelist()){
-//            Optional<AuthAccessList> authAccessListFromDB= Optional.ofNullable(authAccessListRepository.findByName(resourceName.getName())
-//                    .orElseThrow(() -> new EntityNotFoundException("The access is not found in the database")));
-//            AuthAccessList authAccessList=authAccessListFromDB.get();
-//            authAccessLists.add(authAccessList);
-//        }
-//        AuthRole authRole=new AuthRole();
-//        role.setCreatedDate(LocalDateTime.now());
-//        authRole.setName(role.getRoleName());
-//        authRole.setAuthAccessList(authAccessLists);
-System.out.println("createRole service==========");
-        return roleRepository.save(role);
-    }
-    public Optional<AuthRole> updateRole(AuthRole rolNew)
-    {
-        Optional<AuthRole> optionalAuthRole= roleRepository.findByName(rolNew.getName());
-
-//        return authRole.map(roleRepository::save);
-        if(optionalAuthRole.isPresent()){
-            AuthRole role=optionalAuthRole.get();
-            Set<AuthAccessList> accessListsFromDB=new HashSet<>();
-            accessListsFromDB=role.getAccessLists();
-
-            Set<AuthAccessList> accessListsFromFront=new HashSet<>();
-            accessListsFromFront=rolNew.getAccessLists();
-
-
-
-            Set<AuthAccessList> accessListsFromNew=new HashSet<>();
-        List<AuthAccessList> accessListsfromdb=new ArrayList<>();
-            List<AuthAccessList> accessListsfromfront=new ArrayList<>();
-            accessListsfromdb.addAll(accessListsFromDB);
-            accessListsfromfront.addAll(accessListsFromFront);
-            boolean exist=false;
-
-            for(int i=0;i<accessListsfromfront.size();i++){
-
-                for(int j=0;j<accessListsfromdb.size();j++){
-                    if(accessListsfromfront.get(i).getName().equals(accessListsfromdb.get(j).getName())){
-                        exist=true;
-                    }
-                    if(!exist){
-                        accessListsFromNew.add(accessListsfromfront.get(i));
-                    }
-
+    public Optional<AuthRole> updateRole(AuthRole rolNew) {
+        Optional<AuthRole> optionalAuthRole = roleRepository.findByName(rolNew.getName());
+        AuthRole authRole =new AuthRole();
+        List<AuthAccessList> finalList = null;
+        if (optionalAuthRole.isPresent()) {
+            System.out.println("Is present=================");
+            authRole = optionalAuthRole.get();
+            finalList = new ArrayList<>();
+            for (AuthAccessList accessList : rolNew.getAccessLists()) {
+                Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(accessList.getName());
+                if (authAccessList.isPresent()) {
+                    System.out.println("is present from the database accessList.getName()==========" + accessList.getName());
+                    finalList.add(authAccessList.get());
+                } else {
+                    System.out.println("Else part ==============");
+                    AuthAccessList authAccessList2 = new AuthAccessList();
+                    authAccessList2.setName(accessList.getName());
+                    finalList.add(authAccessList2);
                 }
+
             }
 
-
-
-//            for(int i =0;i<accessListsFromDB.size();i++){
-//                boolean exist=false;
-//                for(int j=0;j<accessListsFromFront.size();j++){
-//                    if(accessListsFromDB.contains(accessListsFromFront)){
-//                        exist=true;
-//
-//                    }
-//                    if(!exist){
-//
-//                    }
-//                }
-//            }
-//            Iterator accessListIteratorFromfront=accessListsFromFront.iterator();
-//
-//            while(accessListIteratorFromfront.hasNext()){
-//                if(accessListIteratorFromfront.next().equals(accessListIteratorFromDB.next())){
-//
-//                }
-//            }
-
-//            role.setName(rolNew.getName());
-//            role.getAuthorities().forEach(access->access.);
-            //the purpose of the following three code of line is to avoid duplicate
-
-//            accessLists.addAll(rolNew.getAccessLists());
-
-            role.setAccessLists(accessListsFromNew);
-
-//           for(AuthAccessList authAccessList:rolNew.getAccessLists()){
-//              if(!role.getAccessLists().contains(authAccessList)) {
-//                  role.getAccessLists().add(authAccessList);
-//              }
-
-//           }
-          return Optional.of(roleRepository.save(role));
         }
-        else{
-            return Optional.empty();
-        }
+        authRole.setAccessLists(finalList);
+        return Optional.of(roleRepository.save(authRole));
+
     }
 
-
-//    public AuthAccessList createPermssion(PermissionDto permissionDto){
-        public AuthAccessList createPermssion(AuthAccessList permissionDto){
-//        List<AuthRole> authRoleList=new ArrayList<>();
-//        if(!permissionDto.getRoleNames().isEmpty()){
-//            for(RoleName roleName:permissionDto.getRoleNames()){
-//                Optional<AuthRole> authRoleFromDb= Optional.ofNullable(roleRepository.findByName(roleName.getName())
-//                        .orElseThrow(() -> new EntityNotFoundException("The role Is not found in the database")));
-//                AuthRole authRole=authRoleFromDb.get();
-//                authRoleList.add(authRole);
-//
-//            }
-//        }
-//
-//        AuthAccessList permission=new AuthAccessList();
-//        permission.setName(permissionDto.getName());
-//        permission.setAuthRoleList(authRoleList);
-
-        return authAccessListRepository.save(permissionDto) ;
+    public AuthAccessList  saveResource(AuthAccessList authAccessList){
+         return authAccessListRepository.save(authAccessList)   ;
     }
 
+    public Optional<AuthAccessList>  findAccessByName(String access){
+       return authAccessListRepository.findByName(access);
+    }
 
+public void grantRoleToUser(){
+
+}
+
+    public Boolean passwordChange(PasswordRequestUtil passwordRequestUtil)
+    {
+
+        Optional<AuthUser> user=userRepository.findByEmail(passwordRequestUtil.getUserEmail());
+        if(user.isPresent()){
+
+            if(bCryptPasswordEncoder.matches(passwordRequestUtil.getOldPassword(),user.get().getPassword())){
+                System.out.println("confirmed===");
+                user.get().setPassword(bCryptPasswordEncoder.encode(passwordRequestUtil.getNewPassword()));
+                userRepository.save(user.get());
+                return true;
+            }
+            else{
+                System.out.println("not confirmed");
+                return false;
+            }
+        }
+
+        return false;
+
+
+
+    }
+   public List<UserDto> getAllUser(){
+        return toUserDto(userRepository.findAll());
+    }
+    public List<UserDto> toUserDto(List<AuthUser> authUsers){
+        List<UserDto> userDtos=new ArrayList<>();
+        for(AuthUser user:authUsers){
+            UserDto userDto=new UserDto();
+            userDto.setAccountLocked(user.isAccountLocked());
+            userDto.setEnabled(user.isEnabled());
+            userDto.setCreatedDate(user.getCreatedDate());
+            userDto.setLastName(user.getLastName());
+            userDto.setFirstName(user.getFirstName());
+            userDto.setLastModifiedDate(user.getLastModifiedDate());
+            userDto.setDateOfBirth(user.getDateOfBirth());
+            userDtos.add(userDto);
+        }
+        return userDtos;
+
+    }
+    
 
 
 }
