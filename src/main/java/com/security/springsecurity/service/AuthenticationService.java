@@ -6,13 +6,11 @@ import com.security.springsecurity.daoauth.RoleRepository;
 import com.security.springsecurity.daoauth.TokenRepository;
 import com.security.springsecurity.daoauth.UserRepository;
 import com.security.springsecurity.dto.*;
-import com.security.springsecurity.entity.AuthAccessList;
-import com.security.springsecurity.entity.AuthRole;
-import com.security.springsecurity.entity.AuthToken;
-import com.security.springsecurity.entity.AuthUser;
+import com.security.springsecurity.entity.*;
 import com.security.springsecurity.security.JwtService;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +44,7 @@ public class AuthenticationService {
 
     private final TokenRepository tokenRepository;
     private final AuthAccessListRepository authAccessListRepository;
+    private final EmailService emailService;
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
@@ -65,12 +65,23 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
-                .enabled(true) //enabled using account activation end point // for HPMIS purpose it is true
+                .enabled(false) // will be enabled
                 .roles(List.of(userRole))
                 .createdDate(LocalDateTime.now()) //added on nob=vember 18
                 .build();
+//        try{
+//            return toRegisterResponse(userRepository.save(user));
+//
+//        }catch(Exception exception){
+//
+//            RegisterResponse registerResponse=new RegisterResponse();
+//            registerResponse.setResult(1);
+//            registerResponse.setErrorMessage(exception.getMessage());
+//            return registerResponse;
+//        }
 
-       return Optional.of(toRegisterResponse(userRepository.save(user))).orElseThrow(() -> {return new DataIntegrityViolationException("Database error");
+       return Optional.of(toRegisterResponse(userRepository.save(user))).orElseThrow(() ->
+       {return new DataIntegrityViolationException("Database error");
        }) ;
 //        sendValidationEmail(user); letter this one should be enabled
     }
@@ -118,24 +129,25 @@ public class AuthenticationService {
                 .build();
     }
 
-//    @Transactional
-//    public void activateAccount(String token) throws MessagingException {
-//        Token savedToken = tokenRepository.findByToken(token)
-//                // todo exception has to be defined
-//                .orElseThrow(() -> new RuntimeException("Invalid token"));
-//        if (LocalDateTime.now().isAfter(savedToken.getExpiredAt())) {
-//            sendValidationEmail(savedToken.getUser());
-//            throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
-//        }
-//
-//        var user = userRepository.findById(savedToken.getUser().getId())
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//        user.setEnabled(true);
-//        userRepository.save(user);
-//
-//        savedToken.setValidatedAt(LocalDateTime.now());
-//        tokenRepository.save(savedToken);
-//    }
+    @Transactional
+    public void activateAccount(String token) throws MessagingException {
+        AuthToken savedToken = tokenRepository.findByToken(token)
+                // todo exception has to be defined
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+        System.out.println("Inside AuthenticationService== "+savedToken.getUser().getName());
+        if (LocalDateTime.now().isAfter(savedToken.getExpiredAt())) {
+            sendValidationEmail(savedToken.getUser());
+            throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
+        }
+
+        var user = userRepository.findById(savedToken.getUser().getId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        savedToken.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(savedToken);
+    }
 
     private String generateAndSaveActivationToken(AuthUser user) {
         // Generate a token
@@ -151,18 +163,25 @@ public class AuthenticationService {
         return generatedToken;
     }
 
-//    private void sendValidationEmail(User user) throws MessagingException {
-//        var newToken = generateAndSaveActivationToken(user);
-//
+    private void sendValidationEmail(AuthUser user) throws MessagingException {
+        System.out.println("inside sendValidationEmail==== ");
+        var newToken = generateAndSaveActivationToken(user);
+        EmailProperties emailProperties=new EmailProperties();
+        emailProperties.setSubject("Account activation");
+        emailProperties.setTo(user.getEmail());
+        emailProperties.setUsername(user.fullNmae());
+        emailProperties.setActivationCode(newToken);
+        emailProperties.setConfirmationUrl(activationUrl);
+        emailService.sendMail(emailProperties);
+
 //        emailService.sendEmail(
-//                user.getEmail(),
-//                user.fullNmae(),
-//                EmailTemplateName.ACTIVATE_ACCOUNT,
-//                activationUrl,
-//                newToken,
-//                "Account activation"
-//        );
-//    }
+//                EmailProperties.builder()
+//                        .to(user.getEmail())
+//                        .activationCode(newToken)
+//                        .confirmationUrl(activationUrl)
+//                        .subject("Account activation")
+//                        .username(user.fullNmae()).build()        );
+    }
 
 
     private String generateActivationCode(int length) {

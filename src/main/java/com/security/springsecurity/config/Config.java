@@ -17,9 +17,9 @@ public class Config {
 		return jaxb2Marshaller;
 	}
 
-	@Bean
-	public JavaMailSender javaMailSender() {
-		return new JavaMailSenderImpl();
-	}
+//	@Bean
+//	public JavaMailSender javaMailSender() {
+//		return new JavaMailSenderImpl();
+//	}
 
 }
