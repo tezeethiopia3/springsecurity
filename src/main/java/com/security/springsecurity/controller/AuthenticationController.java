@@ -4,6 +4,7 @@ package com.security.springsecurity.controller;
 
 import com.security.springsecurity.dto.AuthenticationRequest;
 import com.security.springsecurity.dto.AuthenticationResponse;
+import com.security.springsecurity.dto.RegisterResponse;
 import com.security.springsecurity.dto.RegistrationRequest;
 import com.security.springsecurity.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,12 +28,12 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> register(
+    public RegisterResponse register(
             @RequestBody @Valid RegistrationRequest request
     ) throws MessagingException {
         System.out.println("AuthenticationController==  register method");
-        service.register(request);
-        return ResponseEntity.accepted().build();
+
+        return service.register(request);
     }
 
     @PostMapping("/authenticate")

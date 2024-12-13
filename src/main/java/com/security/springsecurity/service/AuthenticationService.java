@@ -15,22 +15,16 @@ import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.security.SecureRandom;
-import java.sql.SQLOutput;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,7 +51,7 @@ public class AuthenticationService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-    public void register(RegistrationRequest request) throws MessagingException {
+    public RegisterResponse register(RegistrationRequest request) throws MessagingException {
         System.out.println("AuthenticationService==  register register");
 //        AuthRole userRole = roleRepository.findByName("USER")
         System.out.println("request.getRoleName()==="+request.getRoleName());
@@ -75,8 +69,18 @@ public class AuthenticationService {
                 .roles(List.of(userRole))
                 .createdDate(LocalDateTime.now()) //added on nob=vember 18
                 .build();
-        userRepository.save(user);
+
+       return Optional.of(toRegisterResponse(userRepository.save(user))).orElseThrow(() -> {return new DataIntegrityViolationException("Database error");
+       }) ;
 //        sendValidationEmail(user); letter this one should be enabled
+    }
+
+ public  RegisterResponse   toRegisterResponse(AuthUser user)
+    {
+
+        return RegisterResponse.builder().result(0).email(user.getEmail()).build();
+
+
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
