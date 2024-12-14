@@ -15,20 +15,27 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE_MIXED;
+
 @Service
 @RequiredArgsConstructor
 public class EmailService {
    private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
 public void sendMail(EmailProperties emailProperties) throws MessagingException {
-    String templateName= "confirm-email";
-//    if (emailProperties == null) {
-//        templateName = "confirm-email";
-//    } else {
-//        templateName = emailTemplate.name();
-//    }
+    String templateName;
+    if (emailProperties.getEmailTemplate() == null) {
+        templateName = "confirm-email";
+    } else {
+        templateName = emailProperties.getEmailTemplate().getName();
+    }
     MimeMessage mimeMessage= mailSender.createMimeMessage();
-    MimeMessageHelper helper=new MimeMessageHelper(mimeMessage);
+    MimeMessageHelper helper=new MimeMessageHelper(
+            mimeMessage,
+            MULTIPART_MODE_MIXED,
+            UTF_8.name()
+    );
     helper.setFrom("tezeethiopia@gmail.com");
     helper.addTo("tezeethiopia3@gmail.com");
     helper.setSubject("Tezera you are working Hard");
@@ -40,6 +47,9 @@ public void sendMail(EmailProperties emailProperties) throws MessagingException 
 
     Context context = new Context();
     context.setVariables(properties);
+    String template = templateEngine.process("activate_account", context);
+
+    helper.setText(template, true);
     mailSender.send(mimeMessage);
 
 

@@ -172,6 +172,7 @@ public class AuthenticationService {
         emailProperties.setUsername(user.fullNmae());
         emailProperties.setActivationCode(newToken);
         emailProperties.setConfirmationUrl(activationUrl);
+
         emailService.sendMail(emailProperties);
 
 //        emailService.sendEmail(

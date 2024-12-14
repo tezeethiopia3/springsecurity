@@ -1,5 +1,6 @@
 package com.security.springsecurity.dto;
 
+import com.security.springsecurity.service.EmailTemplateName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,4 +16,5 @@ public class EmailProperties {
     String confirmationUrl;
     String activationCode;
     String subject;
+    EmailTemplateName emailTemplate;
 }
