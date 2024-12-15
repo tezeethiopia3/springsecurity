@@ -12,11 +12,8 @@ import com.security.springsecurity.service.AuthenticationService;
 import com.security.springsecurity.service.EmailService;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,7 +73,21 @@ public class Admin {
     public List<UserDto> getAllUser(){
         return authenticationService.getAllUser();
     }
+@GetMapping("/getAllAccessByRole")
+    public List<AuthAccessList> getAllAccessByUserRole()
+    {
 
+        return authenticationService.getAllAccessByUserRole();
+
+    }
+
+    @GetMapping("/getAllAccessByRoleName")
+    public List<AuthAccessList> getAllAccessByUserRole(@RequestParam String rolename)
+    {
+
+        return authenticationService.getAllAccessByUserRoleNeme(rolename);
+
+    }
 
 
 }

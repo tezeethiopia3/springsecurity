@@ -2,10 +2,7 @@ package com.security.springsecurity.controller;
 
 
 
-import com.security.springsecurity.dto.AuthenticationRequest;
-import com.security.springsecurity.dto.AuthenticationResponse;
-import com.security.springsecurity.dto.RegisterResponse;
-import com.security.springsecurity.dto.RegistrationRequest;
+import com.security.springsecurity.dto.*;
 import com.security.springsecurity.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -43,12 +40,12 @@ public class AuthenticationController {
         System.out.println("AuthenticationController==  authenticate");
         return ResponseEntity.ok(service.authenticate(request));
     }
-    @GetMapping("/activate-account")
-    public void confirm(
-            @RequestParam String token
+    @PostMapping("/activate-account")
+    public ConfirmOtpResponse confirm(
+           @RequestBody OtpConfirm otpConfirm
     ) throws MessagingException {
         System.out.println("confirm=== controller");
-        service.activateAccount(token);
+       return service.activateAccount(otpConfirm);
     }
     @GetMapping("/test")
     public String testFunction()

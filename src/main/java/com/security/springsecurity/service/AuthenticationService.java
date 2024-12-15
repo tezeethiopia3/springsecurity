@@ -9,14 +9,13 @@ import com.security.springsecurity.dto.*;
 import com.security.springsecurity.entity.*;
 import com.security.springsecurity.security.JwtService;
 import jakarta.mail.MessagingException;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -69,27 +68,29 @@ public class AuthenticationService {
                 .roles(List.of(userRole))
                 .createdDate(LocalDateTime.now()) //added on nob=vember 18
                 .build();
-//        try{
-//            return toRegisterResponse(userRepository.save(user));
-//
-//        }catch(Exception exception){
-//
-//            RegisterResponse registerResponse=new RegisterResponse();
-//            registerResponse.setResult(1);
-//            registerResponse.setErrorMessage(exception.getMessage());
-//            return registerResponse;
-//        }
+        try{
+          RegisterResponse registerResponse=  toRegisterResponse(userRepository.save(user));
+//            sendValidationEmail(user);
+            return registerResponse;
 
-       return Optional.of(toRegisterResponse(userRepository.save(user))).orElseThrow(() ->
-       {return new DataIntegrityViolationException("Database error");
-       }) ;
+        }catch(Exception exception){
+
+            RegisterResponse registerResponse=new RegisterResponse();
+            registerResponse.setResult(1);
+            registerResponse.setErrorMessage("THere is database Issue");
+            return registerResponse;
+        }
+
+//       return Optional.of(toRegisterResponse(userRepository.save(user))).orElseThrow(() ->
+//       {return new DataIntegrityViolationException("Database error");
+//       }) ;
 //        sendValidationEmail(user); letter this one should be enabled
     }
 
  public  RegisterResponse   toRegisterResponse(AuthUser user)
     {
 
-        return RegisterResponse.builder().result(0).email(user.getEmail()).build();
+        return RegisterResponse.builder().result(0).email(user.getEmail()).userId(user.getId()).build();
 
 
     }
@@ -98,7 +99,8 @@ public class AuthenticationService {
         System.out.println("AuthenticationService==  register register");
         System.out.println("AuthenticationService==  request.getEmail()"+request.getEmail());
         System.out.println("AuthenticationService==  register register"+request.getPassword());
-        Authentication auth=null;
+       Authentication auth=null;
+
         try {
              auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -112,32 +114,41 @@ public class AuthenticationService {
             System.out.println("The exception is ==="+ex.getLocalizedMessage());
             System.out.println("The exception is ==="+ex.getMessage());
         }
-
+        //for testing
+        List<String> stringsroles=new ArrayList<>();
+        if(auth!=null){
+            for(GrantedAuthority x :auth.getAuthorities()){
+                System.out.println(x.getAuthority());
+                stringsroles.add(x.getAuthority());
+            }
+        }
         System.out.println("AuthenticationService==  after auth");
 
         Map<String, Object> claims = new HashMap<>(); //I have the type of claims from Var to Map<String, Object>
 //        var user = (auth.getPrincipal());
 //        claims.put("fullName", user.);
-
-
-
 //        var jwtToken = jwtService.generateToken(claims, (AuthUser) auth.getPrincipal());
         var jwtToken = jwtService.generateToken(claims, (UserDetails) auth.getPrincipal());
-
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .role(stringsroles)
                 .build();
     }
 
     @Transactional
-    public void activateAccount(String token) throws MessagingException {
-        AuthToken savedToken = tokenRepository.findByToken(token)
+    public ConfirmOtpResponse activateAccount(OtpConfirm otpConfirm) throws MessagingException {
+        AuthToken savedToken = tokenRepository.findByToken(otpConfirm.getOtp())
                 // todo exception has to be defined
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
         System.out.println("Inside AuthenticationService== "+savedToken.getUser().getName());
         if (LocalDateTime.now().isAfter(savedToken.getExpiredAt())) {
             sendValidationEmail(savedToken.getUser());
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
+        }
+        if(otpConfirm.getUserId()!=savedToken.getUser().getId()){
+            sendValidationEmail(savedToken.getUser());
+            throw new RuntimeException("Activation token user Id not equal to fetched user id. A new token has been send to the same email address");
+
         }
 
         var user = userRepository.findById(savedToken.getUser().getId())
@@ -146,7 +157,19 @@ public class AuthenticationService {
         userRepository.save(user);
 
         savedToken.setValidatedAt(LocalDateTime.now());
-        tokenRepository.save(savedToken);
+       return toConfirmOtp(tokenRepository.save(savedToken));
+    }
+    public ConfirmOtpResponse toConfirmOtp(AuthToken authToken)
+    {
+
+        return ConfirmOtpResponse.builder()
+                .result(0)
+                .otp(authToken.getToken())
+                .userId(authToken.getUser().getId())
+                .username(authToken.getUser().getUsername())
+                .build();
+
+
     }
 
     private String generateAndSaveActivationToken(AuthUser user) {
@@ -327,6 +350,27 @@ public void grantRoleToUser(){
             userDtos.add(userDto);
         }
         return userDtos;
+
+    }
+    public List<AuthAccessList> getAllAccessByUserRole()
+    {
+
+       return authAccessListRepository.findByRolesAll();
+
+
+    }
+    public List<AuthAccessList> getAllAccessByUserRoleNeme(String roleName)
+    {
+
+        Optional<AuthRole> authRole= roleRepository.findByName(roleName);
+        if(authRole.isPresent()){
+            int roleId=authRole.get().getId();
+           return authAccessListRepository.findByRoles(roleId);
+
+        }
+
+        return null;
+
 
     }
     

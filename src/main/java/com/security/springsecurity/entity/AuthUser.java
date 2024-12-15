@@ -69,7 +69,10 @@ public class AuthUser implements UserDetails, Principal {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.get(0).getAuthorities();
+//        return roles.get(0).getAuthorities();
+              return this.roles.stream()
+                .map(r-> new SimpleGrantedAuthority(r.getName()))
+                .collect(Collectors.toList());
     }
 
 

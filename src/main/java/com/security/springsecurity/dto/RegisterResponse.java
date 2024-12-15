@@ -16,4 +16,5 @@ public class RegisterResponse {
     private String email;
     private int result;
     private String errorMessage;
+    private int userId;
 }
