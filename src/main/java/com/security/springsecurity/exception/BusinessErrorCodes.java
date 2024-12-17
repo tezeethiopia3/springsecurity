@@ -12,7 +12,8 @@ public enum BusinessErrorCodes {
     ACCOUNT_DISABLED(303,HttpStatus.FORBIDDEN,"User Account is disabled"),
     BAD_CREDENTIALS(304,HttpStatus.FORBIDDEN,"password or login is incorrect"),
     DATA_NOY_FOUND(305,HttpStatus.BAD_REQUEST,"record not found"),
-    VALIDATION_FAILED(306,HttpStatus.BAD_REQUEST,"validation failed")
+    VALIDATION_FAILED(306,HttpStatus.BAD_REQUEST,"validation failed"),
+    PASSWORD_FAILED(306,HttpStatus.BAD_REQUEST,"password failed")
     ;
 
     @Getter

@@ -121,6 +121,25 @@ ResponseEntity<ExceptionResponse> handleLockedException(LockedException exp){
                                         .build()
                         );
     }
+    @ExceptionHandler(IllegalStateException.class)
+    ResponseEntity<ExceptionResponse> PasswordException(IllegalStateException exp){
+
+        return
+                ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(
+                                ExceptionResponse.builder()
+                                        .businessErrorDescription(BusinessErrorCodes.PASSWORD_FAILED.getDescription())
+                                        .businessErrorCode(BusinessErrorCodes.PASSWORD_FAILED.getCode())
+                                        .error(exp.getMessage())
+                                        .build()
+                        );
+    }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    RegisterResponse handleDataIntegrityViolationException(DataIntegrityViolationException exp){
+
+        return RegisterResponse.builder().result(1).errorMessage("There is Database Error").build();
+    }
 
     @ExceptionHandler(ValidationException.class)
     ResponseEntity<ExceptionResponse> handleValidationException(ValidationException exp){
@@ -136,11 +155,11 @@ ResponseEntity<ExceptionResponse> handleLockedException(LockedException exp){
                                         .build()
                         );
     }
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    RegisterResponse handleDataIntegrityViolationException(DataIntegrityViolationException exp){
-
-        return RegisterResponse.builder().result(1).errorMessage("There is Database Error").build();
-    }
+//    @ExceptionHandler(DataIntegrityViolationException.class)
+//    RegisterResponse handleDataIntegrityViolationException(DataIntegrityViolationException exp){
+//
+//        return RegisterResponse.builder().result(1).errorMessage("There is Database Error").build();
+//    }
 
 
 

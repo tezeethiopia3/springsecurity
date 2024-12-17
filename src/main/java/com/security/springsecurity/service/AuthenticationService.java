@@ -21,7 +21,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.security.Principal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -132,6 +134,7 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .role(stringsroles)
+                .firstName(auth.getName())
                 .build();
     }
 
@@ -373,7 +376,40 @@ public void grantRoleToUser(){
 
 
     }
-    
+
+
+    public GenericResponse ChangePassword(ChangePasswordRequest changePasswordRequest, Principal connectedUser) {
+
+        var user = (UserDetails) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
+
+       AuthUser authUser= userRepository.findByEmail(user.getUsername()).get();
+
+
+        System.out.println(authUser.getEmail());
+        if(!changePasswordRequest.getUsername().equals(authUser.getUsername())){
+            throw new IllegalStateException("User name is not correct");
+
+        }
+        if(!passwordEncoder.matches(changePasswordRequest.getOldpassword(),authUser.getPassword())){
+            System.out.println(" not matched");
+            throw new IllegalStateException("Password is not correct");
+
+        }
+        if(!changePasswordRequest.getNewpassword().equals(changePasswordRequest.getConfirmpassword())){
+            throw new IllegalStateException("Password confirmation failed");
+        }
+        authUser.setPassword(passwordEncoder.encode(changePasswordRequest.getNewpassword()));
+
+        userRepository.save(authUser);
+
+        return GenericResponse.builder()
+                .email(authUser.getUsername())
+                .result(0)
+                .userId(authUser.getId())
+                .build();
+    }
+
+
 
 
 }

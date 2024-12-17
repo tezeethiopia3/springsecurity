@@ -14,4 +14,5 @@ import java.util.List;
 public class AuthenticationResponse {
     private String token;
     private List<String> role;
+    private String firstName;
 }

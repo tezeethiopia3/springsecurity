@@ -2,9 +2,7 @@ package com.security.springsecurity.controller;
 
 import com.security.springsecurity.daoauth.AuthAccessListRepository;
 import com.security.springsecurity.daoauth.RoleRepository;
-import com.security.springsecurity.dto.EmailProperties;
-import com.security.springsecurity.dto.PasswordRequestUtil;
-import com.security.springsecurity.dto.UserDto;
+import com.security.springsecurity.dto.*;
 import com.security.springsecurity.entity.AuthAccessList;
 import com.security.springsecurity.entity.AuthRole;
 import com.security.springsecurity.entity.AuthUser;
@@ -12,8 +10,10 @@ import com.security.springsecurity.service.AuthenticationService;
 import com.security.springsecurity.service.EmailService;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +87,11 @@ public class Admin {
 
         return authenticationService.getAllAccessByUserRoleNeme(rolename);
 
+    }
+    @PostMapping("/changePassword")
+
+    public GenericResponse ChangePassword(@RequestBody  ChangePasswordRequest changePasswordRequest, Principal connectedUser) {
+      return  authenticationService.ChangePassword(changePasswordRequest,connectedUser);
     }
 
 
