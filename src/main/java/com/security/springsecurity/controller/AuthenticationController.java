@@ -47,6 +47,11 @@ public class AuthenticationController {
         System.out.println("confirm=== controller");
        return service.activateAccount(otpConfirm);
     }
+    @PostMapping("/forgetpassword")
+    public GenericResponse forgetPassword(@RequestBody UserEmail userEmail) throws MessagingException {
+        System.out.println("userEmail==="+userEmail.getUserEmail());
+      return  service.forgetPassword(userEmail);
+    }
     @GetMapping("/test")
     public String testFunction()
     {

@@ -63,10 +63,10 @@ public class Admin {
         return  authenticationService.grantRoleToUser(user);
     }
     @PostMapping("/passwordChange")
-    public boolean passwordChange(@RequestBody PasswordRequestUtil passwordRequestUtil)
+    public GenericResponse passwordChange(@RequestBody ChangePasswordRequest changePasswordRequest)
     {
         System.out.println("passwordChange method=========");
-      return  authenticationService.passwordChange(passwordRequestUtil);
+      return  authenticationService.passwordChange(changePasswordRequest);
 
     }
 @RequestMapping("/getAllUser")

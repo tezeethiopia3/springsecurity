@@ -210,6 +210,25 @@ public class AuthenticationService {
 //                        .username(user.fullNmae()).build()        );
     }
 
+    private void sendForgetPasswordEmail(AuthUser user,String token) throws MessagingException {
+        System.out.println("inside sendForgetPasswordEmail==== ");
+        EmailProperties emailProperties=new EmailProperties();
+        emailProperties.setSubject("Account activation");
+        emailProperties.setTo(user.getEmail());
+        emailProperties.setUsername(user.fullNmae());
+        emailProperties.setConfirmationUrl(activationUrl);
+        emailProperties.setActivationCode(token);
+        emailService.sendMail(emailProperties);
+
+//        emailService.sendEmail(
+//                EmailProperties.builder()
+//                        .to(user.getEmail())
+//                        .activationCode(newToken)
+//                        .confirmationUrl(activationUrl)
+//                        .subject("Account activation")
+//                        .username(user.fullNmae()).build()        );
+    }
+
 
     private String generateActivationCode(int length) {
         String characters = "0123456789";
@@ -313,25 +332,28 @@ public void grantRoleToUser(){
 
 }
 
-    public Boolean passwordChange(PasswordRequestUtil passwordRequestUtil)
+    public GenericResponse passwordChange(ChangePasswordRequest changePasswordRequest)
     {
 
-        Optional<AuthUser> user=userRepository.findByEmail(passwordRequestUtil.getUserEmail());
+        Optional<AuthUser> user=userRepository.findByEmail(changePasswordRequest.getUsername());
         if(user.isPresent()){
 
-            if(bCryptPasswordEncoder.matches(passwordRequestUtil.getOldPassword(),user.get().getPassword())){
+            if(bCryptPasswordEncoder.matches(changePasswordRequest.getOldpassword(),user.get().getPassword())){
                 System.out.println("confirmed===");
-                user.get().setPassword(bCryptPasswordEncoder.encode(passwordRequestUtil.getNewPassword()));
+                user.get().setPassword(bCryptPasswordEncoder.encode(changePasswordRequest.getNewpassword()));
                 userRepository.save(user.get());
-                return true;
+                return GenericResponse.builder()
+                        .errorMessage("")
+                        .email(user.get().getEmail())
+                        .userId(user.get().getId())
+                        .build();
             }
             else{
-                System.out.println("not confirmed");
-                return false;
+                throw new IllegalStateException("old password is not correct");
             }
         }
 
-        return false;
+        return GenericResponse.builder().errorMessage("User does not exist in the database").result(1).build();
 
 
 
@@ -407,6 +429,46 @@ public void grantRoleToUser(){
                 .result(0)
                 .userId(authUser.getId())
                 .build();
+    }
+
+    public GenericResponse forgetPassword(UserEmail userEmail) throws MessagingException {
+        System.out.println("userEmail==="+userEmail);
+        Optional<AuthUser> user=userRepository.findByEmail(userEmail.getUserEmail());
+        if(user.isEmpty()){
+            System.out.println("user======user.isEmpty()==");
+            return GenericResponse.builder()
+//                    .userId(authUser.getId())
+//                    .email(authUser.getEmail())
+                    .errorMessage("User id is not found")
+                    .result(1)
+                    .build();
+        }
+        else if(user.get().getEmail()!=null) {
+            String generatedToken = generateActivationCode(6);
+            AuthUser authUser=user.get();
+
+            authUser.setPassword(passwordEncoder.encode(generatedToken));
+            userRepository.save(authUser);
+            sendForgetPasswordEmail(authUser,generatedToken);
+
+            return GenericResponse.builder()
+                    .userId(authUser.getId())
+                    .email(authUser.getEmail())
+                    .errorMessage("")
+                    .result(0)
+                    .build();
+
+        }
+        else{
+            return GenericResponse.builder()
+//                    .userId(authUser.getId())
+//                    .email(authUser.getEmail())
+                    .errorMessage("User id is not found")
+                    .result(1)
+                    .build();
+        }
+
+
     }
 
 
