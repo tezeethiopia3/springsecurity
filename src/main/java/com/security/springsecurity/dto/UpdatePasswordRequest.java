@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdatePassword {
+public class UpdatePasswordRequest {
     String username;
     String password;
-    String otptext;
+    String otpText;
 }

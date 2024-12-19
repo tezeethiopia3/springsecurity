@@ -21,7 +21,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -72,7 +71,7 @@ public class AuthenticationService {
                 .build();
         try{
           RegisterResponse registerResponse=  toRegisterResponse(userRepository.save(user));
-//            sendValidationEmail(user);
+            sendValidationEmail(user);
             return registerResponse;
 
         }catch(Exception exception){
@@ -208,6 +207,19 @@ public class AuthenticationService {
 //                        .confirmationUrl(activationUrl)
 //                        .subject("Account activation")
 //                        .username(user.fullNmae()).build()        );
+    }
+
+    private Optional<AuthToken> SaveActivationTokenForForgetPassword(AuthUser user, String newToken) {
+//        String generatedToken = generateActivationCode(6);
+        var token = AuthToken.builder()
+                .token(newToken)
+                .createdAt(LocalDateTime.now())
+                .expiredAt(LocalDateTime.now().plusMinutes(15))
+                .user(user)
+                .build();
+
+
+        return  Optional.of(tokenRepository.save(token));
     }
 
     private void sendForgetPasswordEmail(AuthUser user,String token) throws MessagingException {
@@ -445,18 +457,26 @@ public void grantRoleToUser(){
         }
         else if(user.get().getEmail()!=null) {
             String generatedToken = generateActivationCode(6);
+
             AuthUser authUser=user.get();
+            Optional<AuthToken> authToken = SaveActivationTokenForForgetPassword(authUser,generatedToken);
+//            authUser.setPassword(passwordEncoder.encode(authToken.getToken()));
+//            userRepository.save(authUser);
+            if(authToken.isPresent()) {
+                sendForgetPasswordEmail(authUser, generatedToken);
 
-            authUser.setPassword(passwordEncoder.encode(generatedToken));
-            userRepository.save(authUser);
-            sendForgetPasswordEmail(authUser,generatedToken);
-
-            return GenericResponse.builder()
-                    .userId(authUser.getId())
-                    .email(authUser.getEmail())
-                    .errorMessage("")
-                    .result(0)
-                    .build();
+                return GenericResponse.builder()
+                        .userId(authUser.getId())
+                        .email(authUser.getEmail())
+                        .errorMessage("")
+                        .result(0)
+                        .build();
+            }else{
+                return GenericResponse.builder()
+                        .errorMessage("User id is not found")
+                        .result(1)
+                        .build();
+            }
 
         }
         else{
@@ -471,7 +491,36 @@ public void grantRoleToUser(){
 
     }
 
+    public GenericResponse UpdatePassword(UpdatePasswordRequest updatePasswordRequest) throws MessagingException {
+
+        Optional<AuthUser> authUser=  userRepository.findByEmail(updatePasswordRequest.getUsername());
+        if(authUser.isEmpty()){
+            return genericResponseFunction(1,"User id is not found");
+
+        }
+        Optional<AuthToken> authToken=   tokenRepository.findByToken(updatePasswordRequest.getOtpText());
+        if(authToken.isEmpty()){
+            return genericResponseFunction(1,"Otp id is not found");
+        }
+        if(LocalDateTime.now().isAfter(authToken.get().getExpiredAt())){
+            sendValidationEmail(authToken.get().getUser());
+            return genericResponseFunction(1,"Otp is expired an new OTP is sent to your email address");
+        }
+        AuthUser user=authToken.get().getUser();
+        user.setPassword(passwordEncoder.encode(updatePasswordRequest.getPassword()));
+        userRepository.save(user);
 
 
+       return genericResponseFunction(0,"Password Successfully Updated");
+    }
+
+  public GenericResponse  genericResponseFunction(int result, String errorMessage)
+    {
+        return GenericResponse.builder()
+                .errorMessage(errorMessage)
+                .result(result)
+                .build();
+
+    }
 
 }

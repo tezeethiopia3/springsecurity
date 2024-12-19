@@ -79,4 +79,9 @@ public class AuthenticationController {
 //        return  null;
 //
 //    }
+@PostMapping("/updatePassword")
+public GenericResponse UpdatePassword(@RequestBody  UpdatePasswordRequest updatePasswordRequest) throws MessagingException {
+
+    return service.UpdatePassword(updatePasswordRequest);
+}
 }
