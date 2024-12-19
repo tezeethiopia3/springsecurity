@@ -71,7 +71,7 @@ public class AuthenticationService {
                 .build();
         try{
           RegisterResponse registerResponse=  toRegisterResponse(userRepository.save(user));
-            sendValidationEmail(user);
+//            sendValidationEmail(user);
             return registerResponse;
 
         }catch(Exception exception){
@@ -256,34 +256,42 @@ public class AuthenticationService {
         return codeBuilder.toString();
     }
 
-   public Optional<AuthUser> grantRoleToUser(AuthUser userNew)
+   public Optional<AuthUser> grantRoleToUser(RoleGrantToUserRequest roleGrantToUserRequest)
     {
-        System.out.println("userNew.getEmail()=="+userNew.getEmail());
-        Optional<AuthUser> user1=userRepository.findByEmail(userNew.getEmail());
+        System.out.println("userNew.getEmail()=="+roleGrantToUserRequest.getUserEmail());
+        Optional<AuthUser> user1=userRepository.findByEmail(roleGrantToUserRequest.getUserEmail());
         List<AuthRole> authRoleList=null;
         AuthUser user2=new AuthUser();
         if(user1.isPresent()){
             System.out.println("user1.isPresent()=="+user1.isPresent());
             user2=user1.get();
             authRoleList=new ArrayList<>();
-            for(AuthRole role:userNew.getRoles()){
+            for(RoleName role:roleGrantToUserRequest.getRoleNames()){
 
-                Optional<AuthRole> optionalAuthRole=roleRepository.findByName(role.getName());
-                if(optionalAuthRole.isPresent()){
-                    System.out.println("optionalAuthRole.isPresent()=="+optionalAuthRole.isPresent());
-                    authRoleList.add(optionalAuthRole.get())  ;
-                }else{
-                    AuthRole authRole=new AuthRole();
-//
-                    authRole.setName(role.getName());
-                    authRole.setCreatedDate(LocalDateTime.now());
-                    authRoleList.add(authRole);
-                }
+//                Optional<AuthRole> optionalAuthRole=roleRepository.findByName(role.getName());
+//                if(optionalAuthRole.isPresent()){
+//                    System.out.println("optionalAuthRole.isPresent()=="+optionalAuthRole.isPresent());
+//                    authRoleList.add(optionalAuthRole.get())  ;
+//                }else{
+//                    AuthRole authRole=new AuthRole();
+//                    authRole.setName(role.getName());
+//                    authRole.setCreatedDate(LocalDateTime.now());
+//                    authRoleList.add(authRole);
+//                }
+
+                AuthRole authRole=new AuthRole();
+                authRole.setName(role.getName());
+                authRole.setCreatedDate(LocalDateTime.now());
+                authRoleList.add(authRole);
 
             }
         }
-        user2.setRoles(authRoleList);
-        return Optional.of(userRepository.save(user2));
+        for(AuthRole authRole:user1.get().getRoles()){
+            authRoleList.add(authRole);
+        }
+
+        user1.get().setRoles(authRoleList);
+        return Optional.of(userRepository.save(user1.get()));
     }
 
 //    public Optional<UserList> findByIdFInction(Integer id) {

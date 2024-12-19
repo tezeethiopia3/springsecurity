@@ -60,9 +60,9 @@ public class Admin {
         return authenticationService.saveRole(authRole) ;
     }
     @PostMapping("/grantRoleToUser")
-    public Optional<AuthUser> grantRoleToUser(@ RequestBody AuthUser user){
+    public Optional<AuthUser> grantRoleToUser(@ RequestBody RoleGrantToUserRequest roleGrantToUserRequest){
         System.out.println("grantRoleToUser=============");
-        return  authenticationService.grantRoleToUser(user);
+        return  authenticationService.grantRoleToUser(roleGrantToUserRequest);
     }
     @PostMapping("/passwordChange")
     public GenericResponse passwordChange(@RequestBody ChangePasswordRequest changePasswordRequest)

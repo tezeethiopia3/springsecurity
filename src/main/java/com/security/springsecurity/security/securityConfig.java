@@ -54,6 +54,7 @@ public class securityConfig {
                                 .permitAll()
                                 .requestMatchers("/manager/**").hasAnyRole("MANAGER")
                                 .requestMatchers("/admin/**").hasAnyAuthority("ADMIN","TEST")
+                                .requestMatchers("/customer/**").hasAnyAuthority("ADMIN","CUSTOMER","customer")
                                 // .access(hasIpAddress(allowedIp))
                                 .anyRequest()
                                 .authenticated()
