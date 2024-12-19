@@ -78,6 +78,7 @@ public class Admin {
 @GetMapping("/getAllAccessByRole")
     public List<AuthAccessList> getAllAccessByUserRole()
     {
+        System.out.println("controller getAllAccessByUserRole=========");
 
         return authenticationService.getAllAccessByUserRole();
 

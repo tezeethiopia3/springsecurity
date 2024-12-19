@@ -19,6 +19,10 @@ public class AuthAccessList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
+    private boolean haveAdd;
+    private boolean haveDelete;
+    private boolean haveUpdate;
+    private boolean haveCreate;
     @JsonIgnore
     @ManyToMany(mappedBy = "accessLists",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
    private List<AuthRole> authRoleList;

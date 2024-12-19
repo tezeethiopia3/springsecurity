@@ -66,7 +66,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enabled(false) // will be enabled
-                .roles(List.of(userRole))
+                .roles(Set.of(userRole))
                 .createdDate(LocalDateTime.now()) //added on nob=vember 18
                 .build();
         try{
@@ -257,41 +257,72 @@ public class AuthenticationService {
     }
 
    public Optional<AuthUser> grantRoleToUser(RoleGrantToUserRequest roleGrantToUserRequest)
+//public Optional<AuthUser> grantRoleToUser(AuthUser authUser)
     {
-        System.out.println("userNew.getEmail()=="+roleGrantToUserRequest.getUserEmail());
+//        System.out.println("userNew.getEmail()=="+roleGrantToUserRequest.getUserEmail());
         Optional<AuthUser> user1=userRepository.findByEmail(roleGrantToUserRequest.getUserEmail());
-        List<AuthRole> authRoleList=null;
-        AuthUser user2=new AuthUser();
-        if(user1.isPresent()){
-            System.out.println("user1.isPresent()=="+user1.isPresent());
-            user2=user1.get();
-            authRoleList=new ArrayList<>();
-            for(RoleName role:roleGrantToUserRequest.getRoleNames()){
 
-//                Optional<AuthRole> optionalAuthRole=roleRepository.findByName(role.getName());
-//                if(optionalAuthRole.isPresent()){
-//                    System.out.println("optionalAuthRole.isPresent()=="+optionalAuthRole.isPresent());
-//                    authRoleList.add(optionalAuthRole.get())  ;
-//                }else{
-//                    AuthRole authRole=new AuthRole();
-//                    authRole.setName(role.getName());
-//                    authRole.setCreatedDate(LocalDateTime.now());
-//                    authRoleList.add(authRole);
-//                }
+        Set<AuthRole> authRoleList=new HashSet<>();
+        
+        if(user1.isEmpty()){
+           throw new RuntimeException("User Should exist to provide role");
+        }else{
+            System.out.println("Tezezzzzzz 1=="+user1.get().getEmail());
+            AuthUser authUser=new AuthUser();
+            authUser=user1.get();
+            System.out.println("Tezezzzzzz 2=="+roleGrantToUserRequest.getRoleNames().size());
 
-                AuthRole authRole=new AuthRole();
-                authRole.setName(role.getName());
-                authRole.setCreatedDate(LocalDateTime.now());
-                authRoleList.add(authRole);
+            for(int i=0;i<roleGrantToUserRequest.getRoleNames().size();i++){
+                Optional<AuthRole> role=roleRepository.findByName(roleGrantToUserRequest.getRoleNames().get(i).getName());
+                System.out.println("Tezezzzzzz 2=="+role.get().getName());
+                if(role.isEmpty()){
+                    authRoleList.add(role.get());
+                    
+                }
+               else
+//                   if(!roleGrantToUserRequest.getRoleNames().get(i).getName().equals(role.get().getName()))
+                   {
+                    AuthRole authRole=new AuthRole();
+                    authRole.setId(role.get().getId());
+                    authRole.setName(role.get().getName());
+                    authRole.setAccessLists(role.get().getAccessLists());
+                    authRoleList.add(authRole);
 
+
+
+//                    authRole.set
+                }
+                authRoleList.addAll(user1.get().getRoles());
+
+//                user1.get().setRoles(authRoleList);
+                authUser.setRoles(authRoleList);
+//                user1.get().setRoles(authRoleList);
+                userRepository.save(authUser);
+//               Optional.of(userRepository.save(authUser));
+                return null;
             }
-        }
-        for(AuthRole authRole:user1.get().getRoles()){
-            authRoleList.add(authRole);
-        }
 
-        user1.get().setRoles(authRoleList);
-        return Optional.of(userRepository.save(user1.get()));
+        }
+//        AuthUser user2=new AuthUser();
+//        if(user1.isPresent()){
+//            System.out.println("user1.isPresent()=="+user1.isPresent());
+//            user2=user1.get();
+//            authRoleList=new ArrayList<>();
+//            for(RoleName role:roleGrantToUserRequest.getRoleNames()){
+//                AuthRole authRole=new AuthRole();
+//                authRole.setName(role.getName());
+//                authRole.setCreatedDate(LocalDateTime.now());
+//                authRoleList.add(authRole);
+//
+//            }
+//        }
+//        for(AuthRole authRole:user1.get().getRoles()){
+//            authRoleList.add(authRole);
+//        }
+//
+//        user1.get().setRoles(authRoleList);
+//        return Optional.of(userRepository.save(user1.get()));
+        return  null;
     }
 
 //    public Optional<UserList> findByIdFInction(Integer id) {
@@ -302,13 +333,51 @@ public class AuthenticationService {
 
 public AuthRole saveRole(AuthRole authRole)
 {
-    authRole.setCreatedDate(LocalDateTime.now());
-    Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(authRole.getAccessLists().iterator().next().getName());
-   if(authAccessList.isPresent()){
-       System.out.println("authAccessList.get().getId()===="+authAccessList.get().getId());
-       authRole.setAccessLists(authAccessList.stream().collect(Collectors.toList()));
-   }
-    return roleRepository.save(authRole) ;
+    Optional<AuthRole> authRole1=roleRepository.findByName(authRole.getName());
+    List<AuthAccessList> authAccessLists=new ArrayList<>();
+    if(authRole1.isEmpty()) {
+        authRole.setCreatedDate(LocalDateTime.now());
+        if(!authRole.getAccessLists().isEmpty()){
+            for(int i=0;i<authRole.getAccessLists().size();i++){
+                Optional<AuthAccessList> authAccessList = authAccessListRepository.findByName(authRole.getAccessLists().get(i).getName());
+                authAccessList.ifPresent(authAccessLists::add);
+
+            }
+        }
+//
+        authRole.setAccessLists(authAccessLists);
+        authRole.setLastModifiedDate(LocalDateTime.now());
+        return roleRepository.save(authRole);
+    }else{
+        authRole.setId(authRole1.get().getId());
+//        authRole.setCreatedDate(LocalDateTime.now());
+        if(!authRole.getAccessLists().isEmpty()){
+            for(int i=0;i<authRole.getAccessLists().size();i++){
+                Optional<AuthAccessList> authAccessList = authAccessListRepository.findByName(authRole.getAccessLists().get(i).getName());
+                if(authAccessList.isEmpty()){
+                    authAccessLists.add(authAccessList.get());
+                }else {
+                    AuthAccessList authAccessList1=new AuthAccessList();
+                    authAccessList1.setId(authAccessList.get().getId());
+                    authAccessList1.setName(authAccessList.get().getName());
+                    authAccessList1.setHaveAdd(authAccessList.get().isHaveAdd());
+                    authAccessList1.setHaveDelete(authAccessList.get().isHaveDelete());
+                    authAccessList1.setHaveUpdate(authAccessList.get().isHaveUpdate());
+                    authAccessList1.setHaveCreate(authAccessList.get().isHaveCreate());
+                    authAccessLists.add(authAccessList1);
+                }
+//                authAccessList.ifPresent(authAccessLists::add);
+
+            }
+        }
+        authRole.setAccessLists(authAccessLists);
+//        Optional<AuthAccessList> authAccessList = authAccessListRepository.findByName(authRole.getAccessLists().iterator().next().getName());
+//        if (authAccessList.isPresent()) {
+//            System.out.println("authAccessList.get().getId()====" + authAccessList.get().getId());
+//            authRole.setAccessLists(authAccessList.stream().collect(Collectors.toList()));
+//        }
+        return roleRepository.save(authRole);
+    }
 }
 
 
@@ -399,6 +468,7 @@ public void grantRoleToUser(){
     }
     public List<AuthAccessList> getAllAccessByUserRole()
     {
+        System.out.println("Service getAllAccessByUserRole===================");
 
        return authAccessListRepository.findByRolesAll();
 

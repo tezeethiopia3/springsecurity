@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -44,7 +45,7 @@ public class AuthUser implements UserDetails, Principal {
     private LocalDateTime lastModifiedDate;
     
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    private List<AuthRole> roles;
+    private Set<AuthRole> roles;
 
 //    @OneToMany(
 //            mappedBy = "owner"
