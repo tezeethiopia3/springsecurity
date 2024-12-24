@@ -44,7 +44,7 @@ public class AuthUser implements UserDetails, Principal {
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
     
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<AuthRole> roles;
 
 //    @OneToMany(

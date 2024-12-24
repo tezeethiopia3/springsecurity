@@ -21,12 +21,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.security.Principal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -344,42 +344,76 @@ public AuthRole saveRole(AuthRole authRole)
 
             }
         }
+//        else{
+//            return roleRepository.save(authRole);
+//        }
 //
         authRole.setAccessLists(authAccessLists);
         authRole.setLastModifiedDate(LocalDateTime.now());
         return roleRepository.save(authRole);
     }else{
         authRole.setId(authRole1.get().getId());
-//        authRole.setCreatedDate(LocalDateTime.now());
+//        authRole.setName(authRole1.get().getName());
+        authRole.setCreatedDate(LocalDateTime.now());
         if(!authRole.getAccessLists().isEmpty()){
             for(int i=0;i<authRole.getAccessLists().size();i++){
                 Optional<AuthAccessList> authAccessList = authAccessListRepository.findByName(authRole.getAccessLists().get(i).getName());
-                if(authAccessList.isEmpty()){
-                    authAccessLists.add(authAccessList.get());
-                }else {
-                    AuthAccessList authAccessList1=new AuthAccessList();
-                    authAccessList1.setId(authAccessList.get().getId());
-                    authAccessList1.setName(authAccessList.get().getName());
-                    authAccessList1.setHaveAdd(authAccessList.get().isHaveAdd());
-                    authAccessList1.setHaveDelete(authAccessList.get().isHaveDelete());
-                    authAccessList1.setHaveUpdate(authAccessList.get().isHaveUpdate());
-                    authAccessList1.setHaveCreate(authAccessList.get().isHaveCreate());
-                    authAccessLists.add(authAccessList1);
-                }
-//                authAccessList.ifPresent(authAccessLists::add);
+                authAccessList.ifPresent(authAccessLists::add);
 
             }
         }
-        authRole.setAccessLists(authAccessLists);
-//        Optional<AuthAccessList> authAccessList = authAccessListRepository.findByName(authRole.getAccessLists().iterator().next().getName());
-//        if (authAccessList.isPresent()) {
-//            System.out.println("authAccessList.get().getId()====" + authAccessList.get().getId());
-//            authRole.setAccessLists(authAccessList.stream().collect(Collectors.toList()));
+//        else{
+//            return roleRepository.save(authRole);
 //        }
+//
+        authRole.setAccessLists(authAccessLists);
+        authRole.setLastModifiedDate(LocalDateTime.now());
         return roleRepository.save(authRole);
+//        authRole.setId(authRole1.get().getId());
+//        authRole.setName(authRole1.get().getName());
+//        authRole.setCreatedDate(authRole1.get().getCreatedDate());
+//        authRole.setAccessLists(authRole1.get().getAccessLists());
+//        if(!authRole1.get().getAccessLists().isEmpty()){
+//            for(int i=0;i<authRole1.get().getAccessLists().size();i++){
+//                Optional<AuthAccessList> authAccessList = authAccessListRepository.findByName(authRole1.get().getAccessLists().get(i).getName());
+//                if(!authAccessList.isEmpty()){
+//                    authAccessLists.add(authAccessList.get());
+//                }else {
+//                    AuthAccessList authAccessList1=new AuthAccessList();
+//                    authAccessList1.setId(authAccessList.get().getId());
+//                    authAccessList1.setName(authAccessList.get().getName());
+//                    authAccessList1.setHaveAdd(authAccessList.get().isHaveAdd());
+//                    authAccessList1.setHaveDelete(authAccessList.get().isHaveDelete());
+//                    authAccessList1.setHaveUpdate(authAccessList.get().isHaveUpdate());
+//                    authAccessList1.setHaveCreate(authAccessList.get().isHaveCreate());
+//                    authAccessLists.add(authAccessList1);
+//                }
+//
+//            }
+//        }
+//        authRole.setAccessLists(authAccessLists);
+//        return roleRepository.save(authRole);
     }
 }
 
+//      @PutMapping("grantAccessToRole")
+        public AuthRole assignAccessToRole(AuthRole authRole)
+        {
+            Optional<AuthRole> authRoleOptional=roleRepository.findByName(authRole.getName());
+            AuthRole role=authRoleOptional.get();
+
+            for(int i=0;i<authRole.getAccessLists().size();i++){
+                Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(authRole.
+                        getAccessLists().get(i).getName());
+                List<AuthAccessList> accessLists=new ArrayList<>();
+
+                accessLists.add(authAccessList.get());
+                role.setAccessLists(accessLists);
+            }
+
+          return  roleRepository.save(role);
+
+        }
 
     public Optional<AuthRole> updateRole(AuthRole rolNew) {
         Optional<AuthRole> optionalAuthRole = roleRepository.findByName(rolNew.getName());

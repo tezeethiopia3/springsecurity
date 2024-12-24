@@ -44,7 +44,7 @@ public class AuthRole {
     //auth role is called target class
 //    @ManyToMany(mappedBy = "authRoleList",fetch = FetchType.LAZY)
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinTable(
             name = "Role_with_Access_list",
             joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),

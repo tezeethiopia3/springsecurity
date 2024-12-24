@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,7 +97,13 @@ public class Admin {
     public GenericResponse ChangePassword(@RequestBody  ChangePasswordRequest changePasswordRequest, Principal connectedUser) {
       return  authenticationService.ChangePassword(changePasswordRequest,connectedUser);
     }
+    @PutMapping("grantAccessToRole")
+    public AuthRole assignAccessToRole(@RequestBody AuthRole authRole)
+    {
 
+        return  authenticationService.assignAccessToRole(authRole);
+
+    }
 
 
 

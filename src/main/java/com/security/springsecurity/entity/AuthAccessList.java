@@ -24,7 +24,7 @@ public class AuthAccessList {
     private boolean haveUpdate;
     private boolean haveCreate;
     @JsonIgnore
-    @ManyToMany(mappedBy = "accessLists",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "accessLists", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
    private List<AuthRole> authRoleList;
 
 }

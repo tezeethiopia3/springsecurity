@@ -1,12 +1,15 @@
 package com.security.springsecurity.controller;
 
 import com.security.springsecurity.dto.CustomerDto;
+import com.security.springsecurity.entity.AuthAccessList;
+import com.security.springsecurity.entity.AuthRole;
 import com.security.springsecurity.entity.Customer;
 import com.security.springsecurity.service.CustomerService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,4 +45,5 @@ public class CustomerController {
     public Optional<Customer> getByCode(@RequestParam String code){
         return customerService.getByCode(code);
     }
+
 }
