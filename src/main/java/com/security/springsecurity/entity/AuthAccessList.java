@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,13 @@ public class AuthAccessList {
     private boolean haveUpdate;
     private boolean haveCreate;
     @JsonIgnore
-    @ManyToMany(mappedBy = "accessLists", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-   private List<AuthRole> authRoleList;
+//    @ManyToMany(mappedBy = "accessLists", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToMany
+   private List<AuthRole> authRoleList=new ArrayList<>();
+    public void AddRole(AuthRole authRole)
+    {
+        this.authRoleList.add(authRole);
+    }
+
 
 }

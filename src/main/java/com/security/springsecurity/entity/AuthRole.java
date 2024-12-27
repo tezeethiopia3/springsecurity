@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Collection;
+import java.util.*;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,9 +13,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -44,13 +42,20 @@ public class AuthRole {
     //auth role is called target class
 //    @ManyToMany(mappedBy = "authRoleList",fetch = FetchType.LAZY)
 
-    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY
+//            ,cascade = {
+//            CascadeType.DETACH,
+//            CascadeType.MERGE,
+//            CascadeType.PERSIST,
+//            CascadeType.REFRESH
+//    }
+    )
     @JoinTable(
             name = "Role_with_Access_list",
             joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "access_id",referencedColumnName = "id")
     )
-      private List<AuthAccessList> accessLists;
+      private List<AuthAccessList> accessLists=new ArrayList<>();
 
 
 
