@@ -25,13 +25,15 @@ public class AuthAccessList {
     private boolean haveUpdate;
     private boolean haveCreate;
     @JsonIgnore
-//    @ManyToMany(mappedBy = "accessLists", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @ManyToMany
-   private List<AuthRole> authRoleList=new ArrayList<>();
-    public void AddRole(AuthRole authRole)
-    {
-        this.authRoleList.add(authRole);
-    }
+    @JoinTable(
+            name = "Role_with_Access_list",
+            joinColumns = @JoinColumn(name = "access_id",referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id")
+    )
+    @ManyToMany(fetch = FetchType.LAZY
+            ,cascade = CascadeType.ALL
+    )
 
+   private List<AuthRole> authRoleList=new ArrayList<>();
 
 }

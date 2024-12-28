@@ -42,19 +42,8 @@ public class AuthRole {
     //auth role is called target class
 //    @ManyToMany(mappedBy = "authRoleList",fetch = FetchType.LAZY)
 
-    @ManyToMany(fetch = FetchType.LAZY
-//            ,cascade = {
-//            CascadeType.DETACH,
-//            CascadeType.MERGE,
-//            CascadeType.PERSIST,
-//            CascadeType.REFRESH
-//    }
-    )
-    @JoinTable(
-            name = "Role_with_Access_list",
-            joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "access_id",referencedColumnName = "id")
-    )
+
+    @ManyToMany(mappedBy = "authRoleList", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
       private List<AuthAccessList> accessLists=new ArrayList<>();
 
 

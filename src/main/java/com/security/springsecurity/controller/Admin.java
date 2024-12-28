@@ -97,7 +97,7 @@ public class Admin {
     public GenericResponse ChangePassword(@RequestBody  ChangePasswordRequest changePasswordRequest, Principal connectedUser) {
       return  authenticationService.ChangePassword(changePasswordRequest,connectedUser);
     }
-    @PutMapping("grantAccessToRole")
+    @PutMapping("/grantAccessToRole")
     public AuthRole assignAccessToRole(@RequestBody AuthRole authRole)
     {
 

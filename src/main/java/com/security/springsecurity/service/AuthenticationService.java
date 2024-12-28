@@ -27,7 +27,6 @@ import java.security.Principal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -400,48 +399,44 @@ public AuthRole saveRole(AuthRole authRole)
 //      @PutMapping("grantAccessToRole")
         public AuthRole assignAccessToRole(AuthRole authRole)
         {
-//            Optional<AuthRole> authRoleOptional=roleRepository.findByName(authRole.getName());
-//            AuthRole role=authRoleOptional.get();
-//
-//            for(int i=0;i<authRole.getAccessLists().size();i++){
-//                Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(authRole.
-//                        getAccessLists().get(i).getName());
-//                List<AuthAccessList> accessLists=new ArrayList<>();
-//
-//                accessLists.add(authAccessList.get());
-//                role.setAccessLists(accessLists);
-//            }
-//
-//          return  roleRepository.save(role);
             AuthRole role=new AuthRole();
-//            Optional<AuthRole> authRoleOptional=roleRepository.findByName(authRole.getName());
-//            AuthRole authRoleFromDb=authRoleOptional.get();
-//            role.setId(authRoleFromDb.getId());
-//            role.setName(authRoleFromDb.getName());
-            role.setName(authRole.getName());
-            role.setCreatedDate(LocalDateTime.now());
-            role.setAccessLists(authRole.getAccessLists().stream().map(
-                    authAccessList -> {
-                        AuthAccessList authAccessList1=authAccessList;
-                       Optional<AuthAccessList> accessListfromdb=authAccessListRepository.findByName(authAccessList1.getName());
-                       if(accessListfromdb.isPresent()){
-//                           authAccessList1=accessListfromdb.get();
-                           authAccessList1.setId(accessListfromdb.get().getId());
-//                           authAccessList1.setName(accessListfromdb.get);
-                       }
-                        authAccessList1.AddRole(role);
-                       return authAccessList1;
-                    }
-            ).collect(Collectors.toList()));
 
-return roleRepository.save(role);
+            Optional<AuthRole> authRoleOptional=roleRepository.findByName(authRole.getName());
+            role.setId(authRoleOptional.get().getId());
+            role.setName(authRoleOptional.get().getName());
+
+            for(int i=0;i<authRole.getAccessLists().size();i++){
+                Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(authRole.
+                        getAccessLists().get(i).getName());
+                List<AuthAccessList> accessLists=new ArrayList<>();
+                AuthAccessList authAccessList1=new AuthAccessList();
+                if(authAccessList.isPresent()){
+                    authAccessList1.setId(authAccessList.get().getId());
+                    authAccessList1.setName(authAccessList.get().getName());
+//                    authAccessListRepository.save(authAccessList1);
+
+//                    accessLists.add(authAccessList1);
+                }
+                else{
+                    authAccessList1.setName(authRole.getAccessLists().get(i).getName());
+//                    authAccessListRepository.save(authAccessList1);
+
+                }
+                authAccessList1.getAuthRoleList().add(role);
+                authAccessListRepository.save(authAccessList1);
+//                role.getAccessLists().add(authAccessList1);
+//                roleRepository.save(role);
+                role.setAccessLists(accessLists);
+            }
+
+          return   roleRepository.save(role);
+
         }
 
     public Optional<AuthRole> updateRole(AuthRole rolNew) {
         Optional<AuthRole> optionalAuthRole = roleRepository.findByName(rolNew.getName());
         AuthRole authRole =new AuthRole();
         List<AuthAccessList> finalList = null;
-
         if (optionalAuthRole.isPresent()) {
             System.out.println("Is present=================");
             authRole = optionalAuthRole.get();
