@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("auth")
 @RequiredArgsConstructor
@@ -23,6 +25,16 @@ public class AuthenticationController {
 
     private final AuthenticationService service;
 
+//    @PostMapping("/register")
+//    @ResponseStatus(HttpStatus.ACCEPTED)
+//    public RegisterResponse register(
+//            @RequestBody @Valid RegistrationRequest request
+//    ) throws MessagingException {
+//        System.out.println("AuthenticationController==  register method");
+//
+//        return service.register(request);
+//    }
+
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public RegisterResponse register(
@@ -30,7 +42,7 @@ public class AuthenticationController {
     ) throws MessagingException {
         System.out.println("AuthenticationController==  register method");
 
-        return service.register(request);
+        return service.register2(request);
     }
 
     @PostMapping("/authenticate")

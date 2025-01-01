@@ -34,10 +34,21 @@ public class AuthRole {
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
-    //please note that the name roles is the name used in user class. It should be same name.
-    @ManyToMany(mappedBy ="roles" )
-    @JsonIgnore //used to avoid loop when it eagerly fetch data
-    private List<AuthUser> users;
+    private boolean status;
+    @JsonIgnore
+//    @JoinTable(
+//            name = "User_Role",
+//            joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
+//            inverseJoinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id")
+//    )
+//    @ManyToMany(fetch = FetchType.LAZY
+//            ,cascade = CascadeType.ALL
+//    )
+    @ManyToMany(mappedBy = "roles"
+//            , fetch = FetchType.LAZY
+//            ,cascade = CascadeType.ALL
+    )
+    private List<AuthUser> users=new ArrayList<>();
 //    @JsonIgnore //used to avoid loop when it eagerly fetch data
     //auth role is called target class
 //    @ManyToMany(mappedBy = "authRoleList",fetch = FetchType.LAZY)
@@ -77,6 +88,10 @@ public class AuthRole {
 
 
 
+    }
+
+    public void addUser(AuthUser authUser){
+        this.users.add(authUser);
     }
 
 

@@ -20,7 +20,7 @@ public class SpringsecurityApplication {
 		System.out.println("working thanks God============== test");
 	}
 
-	@Bean
+//	@Bean
 	public CommandLineRunner commandLineRunner(RoleRepository roleRepository)
 	{
 		return  args -> {

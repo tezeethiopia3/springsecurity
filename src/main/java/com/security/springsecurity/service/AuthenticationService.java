@@ -21,10 +21,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import java.security.Principal;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -55,10 +55,8 @@ public class AuthenticationService {
         System.out.println("AuthenticationService==  register register");
 //        AuthRole userRole = roleRepository.findByName("USER")
         System.out.println("request.getRoleName()==="+request.getRoleName());
-        AuthRole userRole = roleRepository.findByName(request.getRoleName())
-
-                // todo - better exception handling
-                .orElseThrow(() -> new IllegalStateException("ROLE was not found"));
+        Optional<AuthRole> userRole = roleRepository.findByName(request.getRoleName());
+        AuthRole role=new AuthRole();
         var user = AuthUser.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -66,13 +64,22 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enabled(false) // will be enabled
-                .roles(Set.of(userRole))
+                .roles(List.of(userRole.get()))
                 .createdDate(LocalDateTime.now()) //added on nob=vember 18
                 .build();
         try{
-          RegisterResponse registerResponse=  toRegisterResponse(userRepository.save(user));
+            if(userRole.isPresent()){
+                role.setId(userRole.get().getId());
+                role.setName(userRole.get().getName());
+            }else{
+                role.setName(request.getRoleName());
+            }
+            role.getUsers().add(user);
+
+
+//            RegisterResponse registerResponse=  toRegisterResponse(roleRepository.save(role));
 //            sendValidationEmail(user);
-            return registerResponse;
+            return  toRegisterResponse(userRepository.save(user));
 
         }catch(Exception exception){
 
@@ -87,8 +94,96 @@ public class AuthenticationService {
 //       }) ;
 //        sendValidationEmail(user); letter this one should be enabled
     }
+    public RegisterResponse  register2(RegistrationRequest authUser)
+    {
+//        try{
+//            AuthUser user=new AuthUser();
+//            List<AuthUser> authUsers=new ArrayList<>();
+//            user.setEmail(authUser.getEmail());
+//            user.setPassword(passwordEncoder.encode(authUser.getPassword()));
+//            user.setCreatedDate(LocalDateTime.now());
+//            user.setEnabled(false);
+//            user.setAccountLocked(false);
+//            user.setAccountLocked(false);
+//            user.setFirstName(authUser.getFirstName());
+//            user.setDateOfBirth(LocalDate.now());
+//            user.setLastName(authUser.getLastName());
+//            authUsers.add(user);
+//            AuthRole role=new AuthRole();
+//            List<AuthRole> authRoleList=new ArrayList<>();
+//            Optional<AuthRole> optionalAuthRol=roleRepository.findByName(authUser.getRoleName());
+//            System.out.println("optionalAuthRol.isPresent()==="+optionalAuthRol.isPresent());
+//            if(optionalAuthRol.isPresent()){
+//                role.setId(optionalAuthRol.get().getId());
+//                role.setName(optionalAuthRol.get().getName());
+//            }{
+//                role.setName(authUser.getRoleName());
+//                role.setCreatedDate(LocalDateTime.now());
+//                authRoleList.add(role);
+//                roleRepository.saveAll(authRoleList);
+//            }
+//            role.addUser(user);
+//            user.addRole(role);
+//            return toRegisterResponseForUser(userRepository.saveAll(authUsers)) ;
+//
+//        }catch(Exception e){
+//            List<RegisterResponse> registerResponses=new ArrayList<>();
+//            RegisterResponse registerResponse=new RegisterResponse();
+//            registerResponse.setResult(1);
+//            registerResponse.setErrorMessage("THere is database Issue");
+//            registerResponses.add(registerResponse);
+//            return registerResponses;
+//        }
+        try{
+            AuthUser user=new AuthUser();
+            user.setEmail(authUser.getEmail());
+            user.setPassword(passwordEncoder.encode(authUser.getPassword()));
+            user.setCreatedDate(LocalDateTime.now());
+            user.setEnabled(false);
+            user.setAccountLocked(false);
+            user.setAccountLocked(false);
+            user.setFirstName(authUser.getFirstName());
+            user.setDateOfBirth(LocalDate.now());
+            user.setLastName(authUser.getLastName());
+            AuthRole role=new AuthRole();
+            Optional<AuthRole> optionalAuthRol=roleRepository.findByName(authUser.getRoleName());
+            if(optionalAuthRol.isPresent()){
+                role.setId(optionalAuthRol.get().getId());
+                role.setName(optionalAuthRol.get().getName());
+            }{
+                role.setName(authUser.getRoleName());
+                role.setCreatedDate(LocalDateTime.now());
+                role.addUser(user);
+                roleRepository.save(role);
+            }
+            role.addUser(user);
+            user.addRole(role);
+            return toRegisterResponse(userRepository.save(user)) ;
 
- public  RegisterResponse   toRegisterResponse(AuthUser user)
+        }catch(Exception e){
+            RegisterResponse registerResponse=new RegisterResponse();
+            registerResponse.setResult(1);
+            registerResponse.setErrorMessage("THere is database Issue");
+            return registerResponse;
+        }
+
+    }
+
+ public  List<RegisterResponse>   toRegisterResponseForUser(List<AuthUser> users)
+//public  RegisterResponse   toRegisterResponseUser(AuthRole user)
+    {
+        System.out.println("toRegisterResponseForUser===");
+        List<RegisterResponse> registerResponses=new ArrayList<>();
+        for(AuthUser user:users){
+            registerResponses.add(RegisterResponse.builder().email(user.getEmail()).userId(user.getId()).build());
+        }
+        return registerResponses;
+
+
+    }
+
+     public  RegisterResponse   toRegisterResponse(AuthUser user)
+//    public  RegisterResponse   toRegisterResponse(AuthRole user)
     {
 
         return RegisterResponse.builder().result(0).email(user.getEmail()).userId(user.getId()).build();
@@ -262,7 +357,7 @@ public class AuthenticationService {
 //        System.out.println("userNew.getEmail()=="+roleGrantToUserRequest.getUserEmail());
         Optional<AuthUser> user1=userRepository.findByEmail(roleGrantToUserRequest.getUserEmail());
 
-        Set<AuthRole> authRoleList=new HashSet<>();
+        List<AuthRole> authRoleList=new ArrayList<>();
         
         if(user1.isEmpty()){
            throw new RuntimeException("User Should exist to provide role");
@@ -396,14 +491,20 @@ public AuthRole saveRole(AuthRole authRole)
     }
 }
 
-//      @PutMapping("grantAccessToRole")
-        public AuthRole assignAccessToRole(AuthRole authRole)
+        public GenericResponse assignAccessToRole(AuthRole authRole)
         {
             AuthRole role=new AuthRole();
 
             Optional<AuthRole> authRoleOptional=roleRepository.findByName(authRole.getName());
-            role.setId(authRoleOptional.get().getId());
-            role.setName(authRoleOptional.get().getName());
+            if(authRoleOptional.isPresent()){
+                role.setId(authRoleOptional.get().getId());
+                role.setName(authRoleOptional.get().getName());
+            }else {
+                GenericResponse.builder()
+                        .errorMessage("Role Does not exist")
+                        .result(1)
+                        .build();
+            }
 
             for(int i=0;i<authRole.getAccessLists().size();i++){
                 Optional<AuthAccessList> authAccessList=authAccessListRepository.findByName(authRole.
@@ -413,23 +514,21 @@ public AuthRole saveRole(AuthRole authRole)
                 if(authAccessList.isPresent()){
                     authAccessList1.setId(authAccessList.get().getId());
                     authAccessList1.setName(authAccessList.get().getName());
-//                    authAccessListRepository.save(authAccessList1);
-
-//                    accessLists.add(authAccessList1);
                 }
                 else{
                     authAccessList1.setName(authRole.getAccessLists().get(i).getName());
-//                    authAccessListRepository.save(authAccessList1);
-
                 }
                 authAccessList1.getAuthRoleList().add(role);
                 authAccessListRepository.save(authAccessList1);
 //                role.getAccessLists().add(authAccessList1);
 //                roleRepository.save(role);
-                role.setAccessLists(accessLists);
+//                role.setAccessLists(accessLists);
             }
 
-          return   roleRepository.save(role);
+          return   GenericResponse.builder()
+                  .errorMessage("")
+                  .result(0)
+                  .build();
 
         }
 
@@ -499,25 +598,25 @@ public void grantRoleToUser(){
 
 
     }
-   public List<UserDto> getAllUser(){
-        return toUserDto(userRepository.findAll());
-    }
-    public List<UserDto> toUserDto(List<AuthUser> authUsers){
-        List<UserDto> userDtos=new ArrayList<>();
-        for(AuthUser user:authUsers){
-            UserDto userDto=new UserDto();
-            userDto.setAccountLocked(user.isAccountLocked());
-            userDto.setEnabled(user.isEnabled());
-            userDto.setCreatedDate(user.getCreatedDate());
-            userDto.setLastName(user.getLastName());
-            userDto.setFirstName(user.getFirstName());
-            userDto.setLastModifiedDate(user.getLastModifiedDate());
-            userDto.setDateOfBirth(user.getDateOfBirth());
-            userDtos.add(userDto);
-        }
-        return userDtos;
-
-    }
+//   public List<UserDto> getAllUser(){
+//        return toUserDto(userRepository.findAll());
+//    }
+//    public List<UserDto> toUserDto2(List<AuthUser> authUsers){
+//        List<UserDto> userDtos=new ArrayList<>();
+//        for(AuthUser user:authUsers){
+//            UserDto userDto=new UserDto();
+//            userDto.setAccountLocked(user.isAccountLocked());
+//            userDto.setEnabled(user.isEnabled());
+//            userDto.setCreatedDate(user.getCreatedDate());
+//            userDto.setLastName(user.getLastName());
+//            userDto.setFirstName(user.getFirstName());
+//            userDto.setLastModifiedDate(user.getLastModifiedDate());
+//            userDto.setDateOfBirth(user.getDateOfBirth());
+//            userDtos.add(userDto);
+//        }
+//        return userDtos;
+//
+//    }
     public List<AuthAccessList> getAllAccessByUserRole()
     {
         System.out.println("Service getAllAccessByUserRole===================");
@@ -528,10 +627,15 @@ public void grantRoleToUser(){
     }
     public List<AuthAccessList> getAllAccessByUserRoleNeme(String roleName)
     {
+        System.out.println("inside service getAllAccessByUserRoleNeme=="+roleName);
+
+
 
         Optional<AuthRole> authRole= roleRepository.findByName(roleName);
+        System.out.println("inside service authRole.isPresent()=="+authRole.isPresent());
         if(authRole.isPresent()){
             int roleId=authRole.get().getId();
+            System.out.println("roleId========"+roleId);
            return authAccessListRepository.findByRoles(roleId);
 
         }
@@ -652,5 +756,6 @@ public void grantRoleToUser(){
                 .build();
 
     }
+
 
 }

@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 public class AuthUser implements UserDetails, Principal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer Id;
+    private Integer id;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
@@ -38,14 +39,21 @@ public class AuthUser implements UserDetails, Principal {
     private boolean accountLocked;
     private boolean enabled;
     @CreatedDate
-    @Column(nullable =false, updatable = false)
+//    @Column(nullable =false, updatable = false)
     private LocalDateTime createdDate;
     @LastModifiedDate
-    @Column(insertable = false)
+//    @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
-    
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<AuthRole> roles;
+    @JoinTable(name = "User_role",
+            joinColumns=@JoinColumn(name = "user_id",referencedColumnName = "id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"))
+
+    @ManyToMany(
+//            fetch = FetchType.LAZY
+//            ,cascade = CascadeType.ALL
+    )
+//    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<AuthRole> roles=new ArrayList<>();
 
 //    @OneToMany(
 //            mappedBy = "owner"
@@ -111,5 +119,8 @@ public class AuthUser implements UserDetails, Principal {
     }
     public String fullNmae(){
         return firstName + " " + lastName;
+    }
+    public void addRole(AuthRole authRole){
+        this.roles.add(authRole);
     }
 }

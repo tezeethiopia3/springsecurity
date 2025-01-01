@@ -72,10 +72,7 @@ public class Admin {
       return  authenticationService.passwordChange(changePasswordRequest);
 
     }
-@RequestMapping("/getAllUser")
-    public List<UserDto> getAllUser(){
-        return authenticationService.getAllUser();
-    }
+
 @GetMapping("/getAllAccessByRole")
     public List<AuthAccessList> getAllAccessByUserRole()
     {
@@ -88,6 +85,7 @@ public class Admin {
     @GetMapping("/getAllAccessByRoleName")
     public List<AuthAccessList> getAllAccessByUserRole(@RequestParam String rolename)
     {
+        System.out.println("inside Controller getAllAccessByUserRole=="+rolename);
 
         return authenticationService.getAllAccessByUserRoleNeme(rolename);
 
@@ -98,7 +96,7 @@ public class Admin {
       return  authenticationService.ChangePassword(changePasswordRequest,connectedUser);
     }
     @PutMapping("/grantAccessToRole")
-    public AuthRole assignAccessToRole(@RequestBody AuthRole authRole)
+    public GenericResponse assignAccessToRole(@RequestBody AuthRole authRole)
     {
 
         return  authenticationService.assignAccessToRole(authRole);
