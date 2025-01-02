@@ -44,7 +44,7 @@ public class UserController {
 
     }
     @GetMapping("/getUserByEmail")
-    public AuthUser getUserByEmail(@RequestParam String email){
+    public UserDto getUserByEmail(@RequestParam String email){
         return userService.getUserByEmail(email);
     }
 }

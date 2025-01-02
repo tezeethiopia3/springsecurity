@@ -210,11 +210,26 @@ public class UserService {
         return  roleResponses;
     }
 
-    public AuthUser getUserByEmail(String email){
+    public UserDto getUserByEmail(String email){
         System.out.println("email==============="+email);
         Optional<AuthUser> user=userRepository.findByEmail(email);
-        return user.orElse(null);
+        return toUserDto(user.orElse(null));
 
+    }
+
+   public UserDto toUserDto(AuthUser user){
+
+        return UserDto.builder()
+                .accountLocked(user.isAccountLocked())
+                .email(user.getEmail())
+                .dateOfBirth(user.getDateOfBirth())
+                .lastModifiedDate(user.getLastModifiedDate())
+                .lastName(user.getLastName())
+                .firstName(user.getFirstName())
+                .createdDate(user.getCreatedDate())
+                .enabled(user.isEnabled())
+                .authRoleSet(user.getRoles().stream().map(AuthRole::getName).toList())
+                .build();
     }
 
 }
